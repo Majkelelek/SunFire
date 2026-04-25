@@ -9,10 +9,10 @@ export default function Admin() {
   const [loading, setLoading] = useState(false);
   const [bgFile, setBgFile] = useState(null);
   const [uploading, setUploading] = useState(false);
-
+  const apiUrl = import.meta.env.VITE_API_URL;
   // Pobierz aktualne kolory przy wejściu do panelu
   useEffect(() => {
-    fetch('http://localhost:5150/api/cms', { credentials: 'include' })
+    fetch(`${apiUrl}/api/cms`, { credentials: 'include' })
       .then(res => res.ok ? res.json() : null)
       .then(data => { if (data) setConfig(data); });
   }, []);
@@ -21,7 +21,7 @@ export default function Admin() {
   const handleSaveConfig = async () => {
     console.log("Wysyłam do bazy:", config);
     setLoading(true);
-    const res = await fetch('http://localhost:5150/api/cms', {
+    const res = await fetch(`${apiUrl}/api/cms`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -47,7 +47,7 @@ export default function Admin() {
   // Rejestracja nowego admina
   const handleAddAdmin = async (e) => {
     e.preventDefault();
-    const res = await fetch('http://localhost:5150/api/auth/register', {
+    const res = await fetch(`${apiUrl}/api/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -69,7 +69,7 @@ export default function Admin() {
     const formData = new FormData();
     formData.append('file', bgFile);
 
-    const res = await fetch('http://localhost:5150/api/cms/upload-bg', {
+    const res = await fetch(`${apiUrl}/api/cms/upload-bg`, {
         method: 'POST',
         credentials: 'include',
         body: formData
@@ -91,7 +91,7 @@ export default function Admin() {
     const handleRemoveBg = async () => {
         if (!window.confirm("Czy na pewno chcesz usunąć zdjęcie z tła?")) return;
 
-        const res = await fetch('http://localhost:5150/api/cms/remove-bg', {
+        const res = await fetch(`${apiUrl}/api/cms/remove-bg`, {
             method: 'DELETE',
             credentials: 'include'
         });

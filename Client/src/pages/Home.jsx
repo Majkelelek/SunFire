@@ -9,7 +9,7 @@ export default function Home() {
 
       <section className="hero">
         <div className="hero-content">
-          <p className="hero-tagline">VISUAL IDENTITY // CREATIVE DIRECTION</p>
+          <p className="hero-tagline">WIZYTÓWKI - BANNERY - POCZTÓWKI</p>
           <h1 className="hero-title">SUN<span>FIRE</span></h1>
           <p className="hero-motto">
             Przekształcam idee w niezapomniane wrażenia wizualne. 
@@ -32,7 +32,7 @@ export default function Home() {
         <div className="focus-item">
           <span className="focus-num">02</span>
           <h3>DIGITAL ART</h3>
-          <p>Ilustracje i koncepty z pogranicza światów.</p>
+          <p>Ilustracje i koncepty.</p>
         </div>
         <div className="focus-item">
           <span className="focus-num">03</span>

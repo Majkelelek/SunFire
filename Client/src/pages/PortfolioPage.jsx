@@ -5,7 +5,7 @@ import './PortfolioPage.css';
 const PortfolioPage = ({ isAdmin }) => {
     const [projects, setProjects] = useState([]);
     const [loading, setLoading] = useState(true);
-    
+    const apiUrl = import.meta.env.VITE_API_URL;
     const [expandedProject, setExpandedProject] = useState(null);
     const [editingSlot, setEditingSlot] = useState(null);
     const [modalStep, setModalStep] = useState('choose');
@@ -16,7 +16,7 @@ const PortfolioPage = ({ isAdmin }) => {
 
     const fetchData = async () => {
         try {
-            const res = await fetch('http://localhost:5150/api/projects');
+            const res = await fetch(`${apiUrl}/api/projects`);
             const data = await res.json();
             setProjects(data);
         } catch (err) {
@@ -59,7 +59,7 @@ const PortfolioPage = ({ isAdmin }) => {
             slotNumber: parseInt(editingSlot, 10),
             title: "Notatka"
         };
-        const res = await fetch('http://localhost:5150/api/projects', {
+        const res = await fetch(`${apiUrl}/api/projects`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(newProject),
@@ -75,7 +75,7 @@ const PortfolioPage = ({ isAdmin }) => {
         const formData = new FormData();
         formData.append('file', fileInput);
         try {
-            const uploadRes = await fetch('http://localhost:5150/api/cms/upload-image', { 
+            const uploadRes = await fetch(`${apiUrl}/api/cms/upload-image`, { 
                 method: 'POST', body: formData, credentials: 'include' 
             });
             const { url } = await uploadRes.json();
@@ -85,7 +85,7 @@ const PortfolioPage = ({ isAdmin }) => {
                 slotNumber: parseInt(editingSlot, 10),
                 title: "Obraz"
             };
-            await fetch('http://localhost:5150/api/projects', {
+            await fetch(`${apiUrl}/api/projects`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(newProject),
@@ -98,7 +98,7 @@ const PortfolioPage = ({ isAdmin }) => {
 
     const handleDelete = async (id) => {
         if (!window.confirm("Usunąć ten element?")) return;
-        await fetch(`http://localhost:5150/api/projects/${id}`, { method: 'DELETE', credentials: 'include' });
+        await fetch(`${apiUrl}/api/projects/${id}`, { method: 'DELETE', credentials: 'include' });
         fetchData();
     };
 

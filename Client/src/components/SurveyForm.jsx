@@ -5,7 +5,7 @@ const SurveyForm = () => {
     const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
     const [errors, setErrors] = useState({});
     const [status, setStatus] = useState('');
-
+    const apiUrl = import.meta.env.VITE_API_URL;
     // Prosta weryfikacja formatu e-mail
     const validateEmail = (email) => {
         return /\S+@\S+\.\S+/.test(email);
@@ -35,8 +35,8 @@ const SurveyForm = () => {
         setStatus('Wysyłanie...');
 
         try {
-            // Tutaj wpisz swój kod z Formspree
-            const res = await fetch('https://formspree.io/f/TWOJ_ID', {
+
+            const res = await fetch(`${apiUrl}/api/Contact`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
@@ -47,10 +47,12 @@ const SurveyForm = () => {
                 setFormData({ name: '', email: '', subject: '', message: '' });
                 setErrors({});
             } else {
-                setStatus('Wystąpił błąd serwera.');
+                // Obsługa błędów zwróconych przez serwer (np. brak zmiennych .env)
+                const errorData = await res.text();
+                setStatus(`Błąd: ${errorData || 'Wystąpił błąd serwera.'}`);
             }
         } catch (err) {
-            setStatus('Błąd połączenia.');
+            setStatus('Błąd połączenia z serwerem.');
         }
     };
 
@@ -98,9 +100,8 @@ const SurveyForm = () => {
             
             {status && <p className="form-status">{status}</p>}
 
-            {/* TWOJA INFORMACJA O PRYWATNOŚCI */}
             <p className="privacy-note">
-                Dane z tego formularza nie są zapisywane w bazie danych – trafiają bezpośrednio na moją skrzynkę e-mail.
+                Dane z tego formularza trafiają bezpośrednio na moją skrzynkę e-mail poprzez wewnętrzny system powiadomień.
             </p>
         </form>
     );

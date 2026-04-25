@@ -4,10 +4,10 @@ import './Navbar.css';
 export default function Navbar({ isAdmin, setIsAdmin }) {
   const navigate = useNavigate();
   const location = useLocation();
-
+  const apiUrl = import.meta.env.VITE_API_URL;
   const handleLogout = async () => {
     try {
-      await fetch('http://localhost:5150/api/auth/logout', { 
+      await fetch(`${apiUrl}/api/auth/logout`, { 
         method: 'POST', 
         credentials: 'include' 
       });

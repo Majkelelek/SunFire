@@ -12,10 +12,10 @@ import AboutPage from './pages/AboutPage';
 function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [authLoading, setAuthLoading] = useState(true); // Nowy stan ładowania
-
+  const apiUrl = import.meta.env.VITE_API_URL;
   useEffect(() => {
     // Sprawdzanie czy jesteś zalogowany
-    fetch('http://localhost:5150/api/auth/check', { credentials: 'include' })
+    fetch(`${apiUrl}/api/auth/check`, { credentials: 'include' })
       .then(res => res.json())
       .then(authData => {
         if (authData.isAuthenticated) {

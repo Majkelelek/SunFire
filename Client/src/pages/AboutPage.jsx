@@ -4,7 +4,7 @@ import './AboutPage.css';
 export default function AboutPage({ isAdmin }) {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
-    
+    const apiUrl = import.meta.env.VITE_API_URL;
     // Modal State
     const [editingItem, setEditingItem] = useState(null); 
     const [tempTitle, setTempTitle] = useState('');
@@ -15,7 +15,7 @@ export default function AboutPage({ isAdmin }) {
 
     const fetchData = async () => {
         try {
-            const res = await fetch('http://localhost:5150/api/cms/about');
+            const res = await fetch(`${apiUrl}/api/about`);
             const result = await res.json();
             setData(result);
         } catch (err) { console.error(err); }
@@ -38,8 +38,8 @@ export default function AboutPage({ isAdmin }) {
             updatedData.philosophy = tempContent;
         } else {
             updatedData.sections = data.sections.map(s => 
-                s.id === editingItem.id ? { ...s, title: tempTitle, content: tempContent, size: tempSize } : s
-            );
+            s.id === editingItem.id ? { ...s, title: tempTitle, content: tempContent, size: tempSize } : s
+        );
         }
 
         await sendUpdate(updatedData);
@@ -59,7 +59,7 @@ export default function AboutPage({ isAdmin }) {
 
     const sendUpdate = async (updatedData) => {
         try {
-            const res = await fetch('http://localhost:5150/api/cms/about', {
+            const res = await fetch(`${apiUrl}/api/about`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(updatedData),

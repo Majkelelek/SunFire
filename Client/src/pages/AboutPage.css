@@ -86,13 +86,49 @@
 }
 
 /* --- SIATKA KART --- */
+.about-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 2rem;
+    border-radius: 12px;
+    position: relative;
+    /* transition itp. */
+}
 .about-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    grid-template-columns: 1fr 1fr; /* Tworzy dwie równe kolumny */
     gap: 30px;
-    position: relative;
-    z-index: 1;
+    width: 100%;
 }
+.size-btns {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+size-btns button {
+    flex: 1;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    cursor: pointer;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+/* Stan aktywny (wybrany) */
+.size-btns button.active {
+    background: #ff4d00; /* Twój kolor akcentu */
+    border-color: #ff4d00;
+    box-shadow: 0 0 15px rgba(255, 77, 0, 0.4);
+}
+
+.size-btns button:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.1);
+}
+
 
 .about-card {
     background: rgba(15, 15, 15, 0.7);
@@ -102,6 +138,9 @@
     padding: 45px;
     border-radius: 25px;
     transition: 0.3s ease;
+}
+.about-card.full-width {
+    grid-column: span 2;
 }
 
 .about-card:hover {
@@ -131,9 +170,10 @@
 }
 
 .bio-text {
+    white-space: pre-wrap;
     line-height: 1.8;
     color: rgba(255, 255, 255, 0.6);
-    font-size: 1.05rem;
+    font-size: 1.1rem;
 }
 
 /* --- SKILLE --- */
@@ -345,4 +385,35 @@
     border-radius: 8px;
     font-size: 1.1rem;
     font-weight: bold;
+}
+
+.admin-edit-btn {
+    background: #ff4d00; /* Twój pomarańczowy akcent */
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.7;
+}
+
+.admin-edit-btn:hover {
+    opacity: 1;
+    transform: scale(1.05);
+    box-shadow: 0 0 10px rgba(255, 77, 0, 0.3);
+}
+
+@media (max-width: 768px) {
+    .about-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .about-card.full-width {
+        grid-column: span 1;
+    }
 }

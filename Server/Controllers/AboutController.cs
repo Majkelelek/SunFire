@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Server.Controllers
 {
     [ApiController]
-    [Route("api/cms/[controller]")] // Automatycznie ustawi trasę na api/cms/about
+    [Route("api/[controller]")] // Automatycznie ustawi trasę na api/about
     public class AboutController : ControllerBase
     {
         private readonly IMongoCollection<AboutData> _aboutCollection;
