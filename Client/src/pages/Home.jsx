@@ -1,32 +1,45 @@
-import { motion } from 'framer-motion';
-import Header from '../components/Header';
-import AnimatedButton from '../components/AnimatedButton';
 import { Link } from 'react-router-dom';
+import './Home.css';
 
-
-const Home = () => {
+export default function Home() {
   return (
-    <motion.div 
-      className="home-container"
-      initial={{ opacity: 0, x: -100 }} 
-      animate={{ opacity: 1, x: 0 }} 
-      exit={{ opacity: 0, x: 100 }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
-    >
-      <Header />
-      
-      <motion.div 
-        style={{ textAlign: 'center', marginTop: '50px' }}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.5 }}
-      >
-        <Link to="/portfolio">
-          <AnimatedButton>Odkryj moje projekty </AnimatedButton>
-        </Link>
-      </motion.div>
-    </motion.div>
-  );
-};
+    <div className="home-container">
+      <div className="home-bg-noise"></div> {/* Subtelny efekt ziarna/szumu */}
+      <div className="home-glow-main"></div>
 
-export default Home;
+      <section className="hero">
+        <div className="hero-content">
+          <p className="hero-tagline">VISUAL IDENTITY // CREATIVE DIRECTION</p>
+          <h1 className="hero-title">SUN<span>FIRE</span></h1>
+          <p className="hero-motto">
+            Przekształcam idee w niezapomniane wrażenia wizualne. 
+            Design, który płonie pasją i precyzją.
+          </p>
+          
+          <div className="hero-btns">
+            <Link to="/portfolio" className="btn-primary">ZOBACZ PRACE</Link>
+            <Link to="/contact" className="btn-secondary">POROZMAWIAJMY</Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="design-focus">
+        <div className="focus-item">
+          <span className="focus-num">01</span>
+          <h3>BRANDING</h3>
+          <p>Tworzenie tożsamości, które zapadają w pamięć.</p>
+        </div>
+        <div className="focus-item">
+          <span className="focus-num">02</span>
+          <h3>DIGITAL ART</h3>
+          <p>Ilustracje i koncepty z pogranicza światów.</p>
+        </div>
+        <div className="focus-item">
+          <span className="focus-num">03</span>
+          <h3>UI DESIGN</h3>
+          <p>Estetyka połączona z perfekcyjną użytecznością.</p>
+        </div>
+      </section>
+    </div>
+  );
+}

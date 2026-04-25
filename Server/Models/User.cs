@@ -10,6 +10,7 @@ namespace Server.Models
         public string? Id { get; set; }
         public string Username { get; set; } = string.Empty;
         public string PasswordHash { get; set; } = string.Empty;
+        public string? CurrentToken { get; set; }
     }
 
     // TA DEFINICJA ZOSTAJE TYLKO TUTAJ

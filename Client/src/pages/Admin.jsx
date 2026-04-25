@@ -62,11 +62,6 @@ export default function Admin() {
     }
   };
 
-  const logout = () => {
-    document.cookie = "sunfire_auth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    navigate('/login');
-  };
-
   const handleUploadBg = async () => {
     if (!bgFile) return alert("Wybierz plik!");
     
@@ -116,7 +111,6 @@ export default function Admin() {
 
   return (
     <div className="admin-wrapper">
-      <button onClick={logout} className="logout-btn">WYLOGUJ</button>
       <h1 className="admin-header">Sunfire CMS</h1>
 
       <div className="admin-section">

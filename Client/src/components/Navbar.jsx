@@ -1,41 +1,62 @@
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import './Navbar.css';
 
-const Navbar = ({ isAdmin, setIsAdmin }) => { //
+export default function Navbar({ isAdmin, setIsAdmin }) {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = async () => {
-    const res = await fetch('http://localhost:5150/api/auth/logout', {
-      method: 'POST',
-      credentials: 'include'
-    });
-    if (res.ok) {
+    try {
+      await fetch('http://localhost:5150/api/auth/logout', { 
+        method: 'POST', 
+        credentials: 'include' 
+      });
       setIsAdmin(false);
       navigate('/');
+    } catch (err) {
+      console.error("Błąd wylogowania", err);
     }
   };
 
   return (
     <nav className="navbar">
-      <div className="navbar-logo">
-        <Link to="/">SUNFIRE</Link>
-      </div>
-      <ul className="navbar-links">
-        <li><Link to="/">START</Link></li>
-        <li><Link to="/portfolio">PORTFOLIO</Link></li>
-        <li><Link to="/contact">ZATRUDNIJ MNIE</Link></li>
-        {/* Przycisk wylogowania jako element listy li */}
-        {isAdmin && (
-          <li>
-            <button className="logout-btn" onClick={handleLogout}>
+      <div className="nav-container">
+        <Link to="/" className="nav-logo">
+          SUN<span>FIRE</span>
+        </Link>
+
+        <div className="nav-links">
+          <Link to="/" className={location.pathname === '/' ? 'active' : ''}>
+            Start
+          </Link>
+          <Link to="/portfolio" className={location.pathname === '/portfolio' ? 'active' : ''}>
+            Portfolio
+          </Link>
+          <Link to="/about" className={location.pathname === '/about' ? 'active' : ''}>
+            O mnie
+          </Link>
+          <Link to="/contact" className={location.pathname === '/contact' ? 'active' : ''}>
+            Kontakt
+          </Link>
+          
+          {isAdmin && (
+            <Link to="/admin" className={`nav-admin-link ${location.pathname === '/admin' ? 'active' : ''}`}>
+              Panel Admina
+            </Link>
+          )}
+        </div>
+
+        <div className="nav-actions">
+          {isAdmin ? (
+            <button onClick={handleLogout} className="logout-btn">
               WYLOGUJ
             </button>
-          </li>
-        )}
-      </ul>
+          ) : (
+            <Link to="/login" className="login-link">ZALOGUJ</Link>
+          )}
+        </div>
+      </div>
+      <div className="nav-bottom-glow"></div>
     </nav>
   );
-};
-
-export default Navbar;
+}

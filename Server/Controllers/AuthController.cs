@@ -15,6 +15,7 @@ namespace Server.Controllers
     {
         private readonly IMongoCollection<User> _users;
         private readonly string _jwtKey;
+        private const string CookieName = "sunfire_auth"; // Jedna nazwa dla całego pliku
 
         public AuthController(IMongoClient client)
         {
@@ -27,10 +28,10 @@ namespace Server.Controllers
         public async Task<IActionResult> Login([FromBody] LoginRequest req)
         {
             var user = await _users.Find(u => u.Username == req.Username).FirstOrDefaultAsync();
+            
             if (user == null || !BCrypt.Net.BCrypt.Verify(req.Password, user.PasswordHash))
                 return Unauthorized("Błędne dane logowania");
 
-            // Claims są niezbędne, żeby [Authorize] działało poprawnie
             var claims = new[] { 
                 new Claim(ClaimTypes.Name, user.Username),
                 new Claim(ClaimTypes.Role, "Admin")
@@ -45,10 +46,14 @@ namespace Server.Controllers
 
             var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 
-            // Wysyłamy ciastko do przeglądarki
-            Response.Cookies.Append("sunfire_auth", tokenString, new CookieOptions {
+            // --- ZAPISUJEMY TOKEN W MONGODB ---
+            var update = Builders<User>.Update.Set(u => u.CurrentToken, tokenString);
+            await _users.UpdateOneAsync(u => u.Id == user.Id, update);
+
+            // --- WYSYŁAMY CIASTKO (z poprawnymi opcjami) ---
+            Response.Cookies.Append(CookieName, tokenString, new CookieOptions {
                 HttpOnly = true,
-                Secure = false, // false na localhost (brak HTTPS)
+                Secure = false, // Zmień na true na produkcji (HTTPS)
                 SameSite = SameSiteMode.Lax,
                 Path = "/",
                 Expires = DateTime.Now.AddHours(4)
@@ -57,39 +62,52 @@ namespace Server.Controllers
             return Ok(new { message = "Zalogowano" });
         }
 
-        [HttpPost("register")]
-        [Authorize] // Tylko Ty (MK) możesz zarejestrować np. grafika
-        public async Task<IActionResult> Register([FromBody] LoginRequest req)
-        {
-            var exists = await _users.Find(u => u.Username == req.Username).AnyAsync();
-            if (exists) return BadRequest("Użytkownik już istnieje");
-
-            var newUser = new User {
-                Username = req.Username,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(req.Password)
-            };
-
-            await _users.InsertOneAsync(newUser);
-            return Ok("Dodano nowego użytkownika");
-        }
         [HttpGet("check")]
-        public IActionResult Check()
+        public async Task<IActionResult> Check()
         {
-            // Zwracamy status 200 OK w każdym przypadku, 
-            // ale z informacją o tym, czy użytkownik jest faktycznie uwierzytelniony.
+            // 1. Pobieramy token z ciasteczka
+            var tokenFromCookie = Request.Cookies[CookieName];
+
+            if (string.IsNullOrEmpty(tokenFromCookie))
+            {
+                return Ok(new { isAuthenticated = false });
+            }
+
+            // 2. SPRAWDZAMY W BAZIE CZY TEN TOKEN ISTNIEJE
+            var user = await _users.Find(u => u.CurrentToken == tokenFromCookie).FirstOrDefaultAsync();
+
+            if (user == null)
+            {
+                // Token jest w przeglądarce, ale nie ma go w bazie (ktoś go unieważnił)
+                Response.Cookies.Delete(CookieName);
+                return Ok(new { isAuthenticated = false });
+            }
+
             return Ok(new { 
-                isAuthenticated = User.Identity?.IsAuthenticated ?? false
+                isAuthenticated = true,
+                username = user.Username 
             });
         }
+
         [HttpPost("logout")]
-        public IActionResult Logout()
+        public async Task<IActionResult> Logout()
         {
-            // Usuwamy ciasteczko z tokenem JWT
-            Response.Cookies.Delete("jwt", new CookieOptions
+            var tokenFromCookie = Request.Cookies[CookieName];
+
+            if (!string.IsNullOrEmpty(tokenFromCookie))
+            {
+                // --- USUWAMY TOKEN Z BAZY ---
+                var update = Builders<User>.Update.Set(u => u.CurrentToken, null);
+                await _users.UpdateOneAsync(u => u.CurrentToken == tokenFromCookie, update);
+            }
+
+            // --- USUWAMY CIASTKO (musi mieć te same opcje co w Login!) ---
+            Response.Cookies.Delete(CookieName, new CookieOptions
             {
                 HttpOnly = true,
-                Secure = true, // ustaw na true jeśli używasz HTTPS
-                SameSite = SameSiteMode.None // lub Lax, zależnie od Twojej konfiguracji CORS
+                Secure = false, // musi być identyczne jak w Login
+                SameSite = SameSiteMode.Lax,
+                Path = "/"
             });
 
             return Ok(new { message = "Wylogowano pomyślnie" });

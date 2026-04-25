@@ -7,29 +7,14 @@ import Admin from './pages/Admin';
 import Login from './pages/Login';
 import PortfolioPage from './pages/PortfolioPage';
 import ProtectedRoute from './components/ProtectedRoute';
+import AboutPage from './pages/AboutPage';
 
 function App() {
-  // --- DEFINIUJEMY STAN LOGOWANIA DLA CAŁEJ APKI ---
   const [isAdmin, setIsAdmin] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true); // Nowy stan ładowania
 
   useEffect(() => {
-    // 1. Pobieranie konfiguracji wyglądu strony
-    fetch('http://localhost:5150/api/cms')
-      .then(res => res.json())
-      .then(data => {
-        if (data && data.primaryColor) {
-          document.documentElement.style.setProperty('--primary', data.primaryColor);
-          document.documentElement.style.setProperty('--dark-bg', data.backgroundColor);
-          if (data.backgroundImageUrl) {
-            document.body.style.backgroundImage = `url(${data.backgroundImageUrl})`;
-            document.body.style.backgroundSize = "cover";
-            document.body.style.backgroundAttachment = "fixed";
-          }
-        }
-      })
-      .catch(() => console.log("Czekam na konfigurację serwera..."));
-
-    // 2. SPRAWDZANIE CZY JESTEŚ ZALOGOWANY (Ciche, bez błędu 401 w konsoli)
+    // Sprawdzanie czy jesteś zalogowany
     fetch('http://localhost:5150/api/auth/check', { credentials: 'include' })
       .then(res => res.json())
       .then(authData => {
@@ -37,12 +22,15 @@ function App() {
           setIsAdmin(true);
         }
       })
-      .catch(() => setIsAdmin(false));
+      .catch(() => setIsAdmin(false))
+      .finally(() => setAuthLoading(false)); // Kończymy ładowanie
   }, []);
+
+  // Jeśli jeszcze sprawdzamy uprawnienia, nie renderujemy nic lub pokazujemy loader
+  if (authLoading) return <div className="loading">Weryfikacja uprawnień...</div>;
 
   return (
     <Router>
-      {/* Przekazujemy isAdmin do Navbara, żeby mógł wyświetlić przycisk "Wyloguj" */}
       <Navbar isAdmin={isAdmin} setIsAdmin={setIsAdmin} />
       
       <div className="content-wrapper">
@@ -50,9 +38,18 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+          <Route path="/about" element={<AboutPage isAdmin={isAdmin} />} />
           
-          {/* Przekazujemy isAdmin do PortfolioPage jako prop */}
+          {/* PRZEKAZUJEMY isAdmin DO PROTECTED ROUTE */}
+          <Route 
+            path="/admin" 
+            element={
+              <ProtectedRoute isAdmin={isAdmin}>
+                <Admin />
+              </ProtectedRoute>
+            } 
+          />
+          
           <Route path="/portfolio" element={<PortfolioPage isAdmin={isAdmin} />} />
         </Routes>
       </div>

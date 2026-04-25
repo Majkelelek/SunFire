@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import './Login.css';
 
-export default function Login() {
+export default function Login({ setIsAdmin }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -9,7 +10,7 @@ export default function Login() {
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
-    e.preventDefault(); // Zapobiega odświeżeniu strony
+    e.preventDefault();
     setLoading(true);
     setError('');
 
@@ -21,97 +22,60 @@ export default function Login() {
           Username: username, 
           Password: password 
         }),
-        credentials: 'include' // Kluczowe: pozwala przeglądarce przyjąć ciasteczko HttpOnly
+        credentials: 'include'
       });
 
       if (res.ok) {
-        navigate('/admin'); // Sukces! Idziemy do panelu
+        if (setIsAdmin) setIsAdmin(true); // Aktualizujemy stan w App.jsx
+        navigate('/admin');
       } else {
-        setError('Błędny login lub hasło.');
+        setError('Nieuprawniony dostęp.');
       }
     } catch (err) {
-      setError('Błąd połączenia z serwerem.');
+      setError('Błąd połączenia z bazą.');
     } finally {
       setLoading(false);
     }
   };
 
-  // Stylizacja "na szybko", żeby grafik był zadowolony z wyglądu
-  const styles = {
-    container: {
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      height: '100vh',
-      backgroundColor: '#050505',
-      color: '#fff',
-      fontFamily: 'sans-serif'
-    },
-    form: {
-      backgroundColor: '#111',
-      padding: '40px',
-      borderRadius: '12px',
-      boxShadow: '0 0 20px rgba(255, 77, 0, 0.2)',
-      width: '300px',
-      display: 'flex',
-      flexDirection: 'column'
-    },
-    input: {
-      padding: '12px',
-      margin: '10px 0',
-      borderRadius: '4px',
-      border: '1px solid #333',
-      backgroundColor: '#222',
-      color: '#fff'
-    },
-    button: {
-      padding: '12px',
-      marginTop: '20px',
-      backgroundColor: '#ff4d00',
-      color: '#fff',
-      border: 'none',
-      borderRadius: '4px',
-      fontWeight: 'bold',
-      cursor: 'pointer',
-      transition: '0.3s'
-    }
-  };
-
   return (
-    <div style={styles.container}>
-      <form style={styles.form} onSubmit={handleLogin}>
-        <h2 style={{ textAlign: 'center', color: '#ff4d00' }}>SUNFIRE</h2>
-        
-        {error && <p style={{ color: 'red', fontSize: '14px', textAlign: 'center' }}>{error}</p>}
-        
-        <label>Login</label>
-        <input 
-          type="text" 
-          value={username}
-          onChange={(e) => setUsername(e.target.value)} 
-          style={styles.input}
-          placeholder="admin"
-          required
-        />
+    <div className="login-page">
+      <div className="login-background-glow"></div>
+      
+      <form className="login-card" onSubmit={handleLogin}>
+        <div className="login-header">
+          <h1>SUN<span>FIRE</span></h1>
+        </div>
 
-        <label>Hasło</label>
-        <input 
-          type="password" 
-          value={password}
-          onChange={(e) => setPassword(e.target.value)} 
-          style={styles.input}
-          placeholder="••••••••"
-          required
-        />
+        {error && <div className="login-error-badge">{error}</div>}
 
-        <button 
-          type="submit" 
-          style={styles.button}
-          disabled={loading}
-        >
-          {loading ? 'Logowanie...' : 'WEJDŹ DO PANELU'}
+        <div className="login-input-group">
+          <label>Login</label>
+          <input 
+            type="text" 
+            value={username}
+            onChange={(e) => setUsername(e.target.value)} 
+            placeholder="username"
+            required
+          />
+        </div>
+
+        <div className="login-input-group">
+          <label>Hasło</label>
+          <input 
+            type="password" 
+            value={password}
+            onChange={(e) => setPassword(e.target.value)} 
+            placeholder="••••••••"
+            required
+          />
+        </div>
+
+        <button className="login-submit-btn" type="submit" disabled={loading}>
+          {loading ? <span className="loader"></span> : 'ZALOGUJ'}
         </button>
+
+        <Link to="/" className="login-back-link">Wróć do strony głównej</Link>
       </form>
     </div>
   );

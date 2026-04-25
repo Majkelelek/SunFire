@@ -65,13 +65,7 @@ body {
 }
 
 /* Główny kontener na treść stron */
-.content-wrapper {
-  padding-top: 120px; /* Robimy miejsce, żeby Navbar nie zasłaniał napisu Sunfire */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-height: 100vh;
-}
+
 
 .container {
   width: 100%;

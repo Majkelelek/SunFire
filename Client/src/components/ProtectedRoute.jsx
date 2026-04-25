@@ -1,23 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Navigate } from 'react-router-dom';
 
-const ProtectedRoute = ({ children }) => {
-    const [isAuth, setIsAuth] = useState(null);
+const ProtectedRoute = ({ isAdmin, children }) => {
+    // Jeśli nie jesteś adminem, przekieruj do logowania
+    if (!isAdmin) {
+        return <Navigate to="/login" replace />;
+    }
 
-    useEffect(() => {
-        // Sprawdzamy status na backendzie
-        fetch('http://localhost:5150/api/auth/check', { credentials: 'include' })
-            .then(res => {
-                if (res.ok) setIsAuth(true);
-                else setIsAuth(false);
-            })
-            .catch(() => setIsAuth(false));
-    }, []);
-
-    if (isAuth === null) return <div>Sprawdzanie uprawnień...</div>;
-
-    // Jeśli nie jest zalogowany, wyrzuć go na stronę logowania
-    return isAuth ? children : <Navigate to="/login" />;
+    // Jeśli jesteś adminem, pokaż zawartość (stronę Admin)
+    return children;
 };
 
 export default ProtectedRoute;
