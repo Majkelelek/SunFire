@@ -22,7 +22,7 @@ const Home = () => {
         transition={{ delay: 0.5 }}
       >
         <Link to="/portfolio">
-          <AnimatedButton>Odkryj moje projekty</AnimatedButton>
+          <AnimatedButton>Odkryj moje projekty </AnimatedButton>
         </Link>
       </motion.div>
     </motion.div>

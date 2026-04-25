@@ -72,5 +72,13 @@ namespace Server.Controllers
             await _users.InsertOneAsync(newUser);
             return Ok("Dodano nowego użytkownika");
         }
+        [HttpGet("check")]
+        public IActionResult CheckAuth()
+        {
+            if (User.Identity?.IsAuthenticated == true)
+                return Ok(new { isAdmin = true });
+            
+            return Unauthorized();
+        }
     }
 }

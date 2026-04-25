@@ -107,5 +107,23 @@ namespace Server.Controllers
 
             return Ok(new { message = "Zdjęcie tła zostało usunięte" });
         }
+        [HttpPost("upload-image")]
+        [Authorize]
+        public async Task<IActionResult> UploadImage(IFormFile file)
+        {
+            if (file == null || file.Length == 0) return BadRequest("Brak pliku");
+
+            using var stream = file.OpenReadStream();
+            var uploadParams = new ImageUploadParams()
+            {
+                File = new FileDescription(file.FileName, stream),
+                Folder = "portfolio_projects",
+                Transformation = new Transformation().Quality("auto").FetchFormat("auto")
+            };
+
+            var result = await _cloudinary.UploadAsync(uploadParams);
+            return Ok(new { url = result.SecureUrl.ToString() });
+        }
     }
+    
 }

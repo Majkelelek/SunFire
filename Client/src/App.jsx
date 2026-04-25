@@ -5,7 +5,8 @@ import Home from './pages/Home';
 import ContactPage from './pages/ContactPage';
 import Admin from './pages/Admin';
 import Login from './pages/Login';
-
+import PortfolioPage from './pages/PortfolioPage'; // upewnij się, że ścieżka do pliku jest poprawna
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   useEffect(() => {
@@ -36,7 +37,8 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/admin" element={<Admin />} />
+          <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+          <Route path="/portfolio" element={<PortfolioPage />} />
         </Routes>
       </div>
     </Router>
