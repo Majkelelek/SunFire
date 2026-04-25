@@ -29,31 +29,63 @@ namespace Server.Controllers
         {
             var user = await _users.Find(u => u.Username == req.Username).FirstOrDefaultAsync();
             
-            if (user == null || !BCrypt.Net.BCrypt.Verify(req.Password, user.PasswordHash))
+            if (user == null) 
                 return Unauthorized("Błędne dane logowania");
 
+            // 1. Sprawdź czy konto jest obecnie zablokowane
+            if (user.LockoutEnd.HasValue && user.LockoutEnd > DateTime.Now)
+            {
+                var remainingTime = Math.Ceiling((user.LockoutEnd.Value - DateTime.Now).TotalMinutes);
+                return BadRequest($"Zbyt wiele nieudanych prób. Konto zablokowane na jeszcze {remainingTime} min.");
+            }
+
+            // 2. Weryfikacja hasła
+            if (!BCrypt.Net.BCrypt.Verify(req.Password, user.PasswordHash))
+            {
+                // Zwiększ licznik błędów
+                int newAttempts = user.FailedAttempts + 1;
+                var updateDef = Builders<User>.Update.Set(u => u.FailedAttempts, newAttempts);
+
+                if (newAttempts >= 5)
+                {
+                    // Nałóż blokadę na 15 minut
+                    updateDef = updateDef.Set(u => u.LockoutEnd, DateTime.Now.AddMinutes(15));
+                    await _users.UpdateOneAsync(u => u.Id == user.Id, updateDef);
+                    return BadRequest("Przekroczono limit prób. Konto zablokowane na 15 minut.");
+                }
+
+                await _users.UpdateOneAsync(u => u.Id == user.Id, updateDef);
+                return Unauthorized(new { message = "Błędne dane logowania", remainingAttempts = 5 - newAttempts });
+            }
+
+            // 3. Sukces - Resetujemy licznik i blokadę
+            var successUpdate = Builders<User>.Update
+                .Set(u => u.FailedAttempts, 0)
+                .Set(u => u.LockoutEnd, null);
+
+            // ... reszta Twojej logiki generowania tokena JWT ...
             var claims = new[] { 
                 new Claim(ClaimTypes.Name, user.Username),
                 new Claim(ClaimTypes.Role, "Admin")
             };
-
+            
+            // (generowanie tokena tak jak masz w kodzie)
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtKey));
             var token = new JwtSecurityToken(
                 claims: claims,
                 expires: DateTime.Now.AddHours(4),
                 signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
             );
-
             var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 
-            // --- ZAPISUJEMY TOKEN W MONGODB ---
-            var update = Builders<User>.Update.Set(u => u.CurrentToken, tokenString);
-            await _users.UpdateOneAsync(u => u.Id == user.Id, update);
+            // Zapisz token i zresetuj liczniki w jednej operacji
+            successUpdate = successUpdate.Set(u => u.CurrentToken, tokenString);
+            await _users.UpdateOneAsync(u => u.Id == user.Id, successUpdate);
 
-            // --- WYSYŁAMY CIASTKO (z poprawnymi opcjami) ---
+            // Wysyłka ciasteczka
             Response.Cookies.Append(CookieName, tokenString, new CookieOptions {
                 HttpOnly = true,
-                Secure = false, // Zmień na true na produkcji (HTTPS)
+                Secure = false, 
                 SameSite = SameSiteMode.Lax,
                 Path = "/",
                 Expires = DateTime.Now.AddHours(4)

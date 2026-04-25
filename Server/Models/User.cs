@@ -11,6 +11,8 @@ namespace Server.Models
         public string Username { get; set; } = string.Empty;
         public string PasswordHash { get; set; } = string.Empty;
         public string? CurrentToken { get; set; }
+        public int FailedAttempts { get; set; } = 0;
+        public DateTime? LockoutEnd { get; set; }
     }
 
     // TA DEFINICJA ZOSTAJE TYLKO TUTAJ

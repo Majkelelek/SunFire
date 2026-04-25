@@ -2,17 +2,20 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import './Login.css';
 
-export default function Login({ setIsAdmin }) {
+export default function Login({ setIsAdmin, checkAuth }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [attemptsInfo, setAttemptsInfo] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const apiUrl = import.meta.env.VITE_API_URL;
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setAttemptsInfo(null);
 
     try {
       const res = await fetch(`${apiUrl}/api/auth/login`, {
@@ -25,14 +28,30 @@ export default function Login({ setIsAdmin }) {
         credentials: 'include'
       });
 
+      // Sprawdzamy czy odpowiedź zawiera treść przed parsonowaniem JSON
+      const data = res.headers.get('content-type')?.includes('application/json') 
+                   ? await res.json() 
+                   : null;
+
       if (res.ok) {
-        if (setIsAdmin) setIsAdmin(true); // Aktualizujemy stan w App.jsx
+        // 1. Aktualizujemy stan w App.jsx
+        if (setIsAdmin) setIsAdmin(true);
+        
+        // 2. Wymuszamy odświeżenie danych o sesji z serwera
+        if (checkAuth) await checkAuth();
+
+        // 3. Przekierowujemy do panelu (Navbar będzie już zaktualizowany)
         navigate('/admin');
       } else {
-        setError('Nieuprawniony dostęp.');
+        // Obsługa błędów i wyświetlanie liczby pozostałych prób
+        setError(data?.message || 'Niepoprawne dane logowania.');
+        if (data?.remainingAttempts !== undefined) {
+          setAttemptsInfo(data.remainingAttempts);
+        }
       }
     } catch (err) {
-      setError('Błąd połączenia z bazą.');
+      setError('Błąd połączenia z serwerem.');
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -48,6 +67,12 @@ export default function Login({ setIsAdmin }) {
         </div>
 
         {error && <div className="login-error-badge">{error}</div>}
+        
+        {attemptsInfo !== null && attemptsInfo > 0 && (
+          <p className="attempts-info" style={{ color: '#ff4d00', textAlign: 'center', fontSize: '0.85rem', marginBottom: '15px' }}>
+            Pozostało prób: {attemptsInfo}
+          </p>
+        )}
 
         <div className="login-input-group">
           <label>Login</label>
