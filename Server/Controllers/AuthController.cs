@@ -73,12 +73,26 @@ namespace Server.Controllers
             return Ok("Dodano nowego użytkownika");
         }
         [HttpGet("check")]
-        public IActionResult CheckAuth()
+        public IActionResult Check()
         {
-            if (User.Identity?.IsAuthenticated == true)
-                return Ok(new { isAdmin = true });
-            
-            return Unauthorized();
+            // Zwracamy status 200 OK w każdym przypadku, 
+            // ale z informacją o tym, czy użytkownik jest faktycznie uwierzytelniony.
+            return Ok(new { 
+                isAuthenticated = User.Identity?.IsAuthenticated ?? false
+            });
+        }
+        [HttpPost("logout")]
+        public IActionResult Logout()
+        {
+            // Usuwamy ciasteczko z tokenem JWT
+            Response.Cookies.Delete("jwt", new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true, // ustaw na true jeśli używasz HTTPS
+                SameSite = SameSiteMode.None // lub Lax, zależnie od Twojej konfiguracji CORS
+            });
+
+            return Ok(new { message = "Wylogowano pomyślnie" });
         }
     }
 }

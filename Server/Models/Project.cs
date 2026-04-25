@@ -1,5 +1,6 @@
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using System.Text.Json.Serialization;
 
 namespace Server.Models
 {
@@ -8,11 +9,21 @@ namespace Server.Models
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         public string? Id { get; set; }
-        public string Title { get; set; } = "";
+
+        [JsonPropertyName("title")] // Wymusza małą literę w JSON
+        public string? Title { get; set; }
+
+        [JsonPropertyName("type")]
+        public string? Type { get; set; } // "image" lub "text"
+
+        [JsonPropertyName("content")]
+        public string? Content { get; set; } // Tu będzie Twój tekst notatki
+
+        [JsonPropertyName("imageUrl")]
         public string? ImageUrl { get; set; }
-        public string Type { get; set; } = "image"; // To pole jest kluczowe!
+
+        [JsonPropertyName("slotNumber")]
         public int SlotNumber { get; set; }
-        public string? Content { get; set; }
         
     }
 }

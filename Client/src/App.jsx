@@ -1,44 +1,59 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react'; // Dodano useState
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import ContactPage from './pages/ContactPage';
 import Admin from './pages/Admin';
 import Login from './pages/Login';
-import PortfolioPage from './pages/PortfolioPage'; // upewnij się, że ścieżka do pliku jest poprawna
+import PortfolioPage from './pages/PortfolioPage';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
+  // --- DEFINIUJEMY STAN LOGOWANIA DLA CAŁEJ APKI ---
+  const [isAdmin, setIsAdmin] = useState(false);
+
   useEffect(() => {
-  fetch('http://localhost:5150/api/cms')
-    .then(res => {
-      if (!res.ok) throw new Error("Błąd serwera");
-      return res.json();
-    })
-    .then(data => {
-      if (data && data.primaryColor) {
-        document.documentElement.style.setProperty('--primary', data.primaryColor);
-        document.documentElement.style.setProperty('--dark-bg', data.backgroundColor);
-        if (data.backgroundImageUrl) {
-          document.body.style.backgroundImage = `url(${data.backgroundImageUrl})`;
-          document.body.style.backgroundSize = "cover";
-          document.body.style.backgroundAttachment = "fixed";
+    // 1. Pobieranie konfiguracji wyglądu strony
+    fetch('http://localhost:5150/api/cms')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.primaryColor) {
+          document.documentElement.style.setProperty('--primary', data.primaryColor);
+          document.documentElement.style.setProperty('--dark-bg', data.backgroundColor);
+          if (data.backgroundImageUrl) {
+            document.body.style.backgroundImage = `url(${data.backgroundImageUrl})`;
+            document.body.style.backgroundSize = "cover";
+            document.body.style.backgroundAttachment = "fixed";
+          }
         }
-      }
-    })
-    .catch(err => console.log("Czekam na konfigurację serwera..."));
-}, []);
+      })
+      .catch(() => console.log("Czekam na konfigurację serwera..."));
+
+    // 2. SPRAWDZANIE CZY JESTEŚ ZALOGOWANY (Ciche, bez błędu 401 w konsoli)
+    fetch('http://localhost:5150/api/auth/check', { credentials: 'include' })
+      .then(res => res.json())
+      .then(authData => {
+        if (authData.isAuthenticated) {
+          setIsAdmin(true);
+        }
+      })
+      .catch(() => setIsAdmin(false));
+  }, []);
 
   return (
     <Router>
-      <Navbar />
+      {/* Przekazujemy isAdmin do Navbara, żeby mógł wyświetlić przycisk "Wyloguj" */}
+      <Navbar isAdmin={isAdmin} setIsAdmin={setIsAdmin} />
+      
       <div className="content-wrapper">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
-          <Route path="/portfolio" element={<PortfolioPage />} />
+          
+          {/* Przekazujemy isAdmin do PortfolioPage jako prop */}
+          <Route path="/portfolio" element={<PortfolioPage isAdmin={isAdmin} />} />
         </Routes>
       </div>
     </Router>

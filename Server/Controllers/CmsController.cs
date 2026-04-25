@@ -113,6 +113,12 @@ namespace Server.Controllers
         {
             if (file == null || file.Length == 0) return BadRequest("Brak pliku");
 
+            long maxFileSize = 10 * 1024 * 1024; 
+                if (file.Length > maxFileSize)
+                {
+                    return BadRequest("Plik przekracza limit 10MB.");
+                }
+                
             using var stream = file.OpenReadStream();
             var uploadParams = new ImageUploadParams()
             {
