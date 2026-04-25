@@ -1,0 +1,24 @@
+.admin-wrapper { padding: 40px; background: #050505; color: #fff; min-height: 100vh; font-family: sans-serif; }
+.admin-header { color: #ff4d00; text-transform: uppercase; letter-spacing: 2px; }
+.admin-section { background: #111; padding: 30px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #222; }
+.color-inputs { display: flex; gap: 40px; margin-bottom: 20px; }
+.color-field { display: flex; flexDirection: column; gap: 10px; }
+.admin-input { display: block; width: 300px; padding: 12px; margin: 10px 0; background: #222; border: 1px solid #333; color: #fff; border-radius: 5px; }
+.sunfire-btn { background: #ff4d00; color: #fff; border: none; padding: 12px 25px; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+.sunfire-btn:hover { background: #e64500; transform: scale(1.02); }
+.logout-btn { float: right; background: #222; color: #888; border: 1px solid #333; padding: 10px 20px; cursor: pointer; border-radius: 5px; }
+.delete-btn {
+  background: #444; /* Ciemny szary lub czerwony */
+  color: #ff4444;
+  border: 1px solid #ff4444;
+  padding: 12px 25px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.delete-btn:hover {
+  background: #ff4444;
+  color: white;
+}
