@@ -10,28 +10,10 @@
   --nav-height: 80px;
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  background-color: var(--dark-bg);
-  color: var(--text-main);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  line-height: 1.6;
-  overflow-x: hidden;
-}
-
 /* --- UKŁAD (LAYOUT) --- */
 .content-wrapper {
   padding-top: var(--nav-height); /* Miejsce pod navbarem */
-  min-height: 100vh;
+  flex: 1; /* TO WAŻNE: Środek "puchnie", wypychając stopkę na dół! */
   display: flex;
   flex-direction: column;
 }
@@ -40,123 +22,14 @@ body {
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 60px 20px;
+  padding: 0 20px;
 }
 
-/* --- NAWIGACJA (GLASSMORPHISM) --- */
-.navbar {
-  height: var(--nav-height);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 10%;
-  background-color: rgba(5, 5, 5, 0.8);
-  backdrop-filter: blur(12px); /* Efekt rozmytego szkła */
-  -webkit-backdrop-filter: blur(12px);
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.nav-logo {
-  font-weight: 900;
-  font-size: 1.8rem;
-  color: var(--primary);
-  text-decoration: none;
-  letter-spacing: -1.5px;
-  text-shadow: 0 0 15px var(--primary-glow);
-}
-
-.nav-links {
-  display: flex;
-  list-style: none;
-  gap: 40px;
-  align-items: center;
-}
-
-.nav-links a {
-  color: var(--text-main);
-  text-decoration: none;
-  font-weight: 500;
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  transition: color 0.3s ease;
-}
-
-.nav-links a:hover {
-  color: var(--primary);
-}
-
-.nav-cta {
-  background: var(--primary);
-  color: white !important;
-  padding: 10px 22px;
-  border-radius: 8px;
-  font-weight: 700 !important;
-  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
-}
-
-.nav-cta:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px var(--primary-glow);
-}
-
-/* --- NAGŁÓWKI I TEKST --- */
-header {
-  text-align: center;
-  margin-bottom: 80px;
-}
-
-header h1 {
-  font-size: clamp(3rem, 10vw, 6rem); /* Skaluje się z ekranem */
-  font-weight: 900;
-  color: var(--primary);
-  letter-spacing: -3px;
-  margin-bottom: 10px;
-  text-transform: uppercase;
-}
-
-header p {
-  color: var(--text-dim);
-  font-size: 1.2rem;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.page-title {
-  text-align: center;
-  font-size: 3rem;
-  margin-bottom: 40px;
-  background: linear-gradient(to bottom, #fff, #444);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* --- PORTFOLIO --- */
-.portfolio-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 30px;
-}
-
+/* --- PORTFOLIO / KARTY --- */
 .work-card {
-  height: 400px;
-  background: var(--card-bg);
-  border-radius: 20px;
-  border: 1px solid #222;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.2rem;
-  font-weight: bold;
-  color: #444;
-  overflow: hidden;
   position: relative;
   transition: border-color 0.4s ease;
+  /* (Jeśli miałeś tu inne marginesy/paddingi, dopisz je śmiało) */
 }
 
 .work-card:hover {
@@ -207,29 +80,14 @@ input:focus, textarea:focus, select:focus {
 .sunfire-submit-btn {
   background: var(--primary);
   color: white;
-  padding: 20px;
+  padding: 15px 30px;
   border: none;
-  border-radius: 15px;
-  font-size: 1.1rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 2px;
+  border-radius: 8px;
+  font-weight: bold;
   cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
-.status-msg {
-  margin-top: 25px;
-  text-align: center;
-  font-weight: 600;
-}
-
-.status-msg.success { color: #00ff88; }
-.status-msg.error { color: #ff4444; }
-
-/* --- RESPONSYWNOŚĆ --- */
-@media (max-width: 768px) {
-  .nav-links { display: none; } /* Tutaj docelowo można dodać Hamburger Menu */
-  .input-group { grid-template-columns: 1fr; }
-  .survey-section { padding: 30px; }
-  header h1 { font-size: 4rem; }
+.sunfire-submit-btn:hover {
+  background-color: #e64500;
 }

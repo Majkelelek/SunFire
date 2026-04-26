@@ -5,8 +5,9 @@ using System.Text;
 using DotNetEnv;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Threading.RateLimiting;
-using System.IdentityModel.Tokens.Jwt; // Wymagane do odczytania tokena
-using Server.Models; // Wymagane do pobrania modelu User
+using System.IdentityModel.Tokens.Jwt;
+using Server.Models; 
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,14 +18,14 @@ var jwtKey = Environment.GetEnvironmentVariable("SUNFIRE_JWT_KEY")
 var mongoUri = Environment.GetEnvironmentVariable("SUNFIRE_MONGO_URI") 
     ?? throw new Exception("Brak MONGO_URI w .env");
 
-// ZABEZPIECZENIE CORS: Pobieranie adresu frontendu ze zmiennych środowiskowych (domyślnie localhost dla deweloperki)
+// ZABEZPIECZENIE CORS: Pobieranie adresu frontendu
 var frontendUrl = Environment.GetEnvironmentVariable("FRONTEND_URL") 
     ?? "http://localhost:5173"; 
 
 // 2. Usługi
 builder.Services.AddSingleton<IMongoClient>(new MongoClient(mongoUri));
 
-// Wstrzykiwanie gotowej bazy danych od razu, by odchudzić konstruktory w Controllerach
+// Wstrzykiwanie bazy danych do DI
 builder.Services.AddSingleton<IMongoDatabase>(sp => 
     sp.GetRequiredService<IMongoClient>().GetDatabase("SunfireDB"));
 
@@ -33,23 +34,21 @@ builder.Services.AddControllers();
 // 3. Rate Limiter (Ochrona przed spamem)
 builder.Services.AddRateLimiter(options =>
 {
-    // Jeśli limit zostanie przekroczony, zwracamy błąd 429 (Too Many Requests)
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
     options.AddPolicy("ContactSpamProtection", httpContext =>
         RateLimitPartition.GetFixedWindowLimiter(
-            // Grupujemy żądania po adresie IP użytkownika
             partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
             factory: partition => new FixedWindowRateLimiterOptions
             {
                 AutoReplenishment = true,
-                PermitLimit = 3, // Maksymalnie 3 wiadomości
+                PermitLimit = 3, 
                 QueueLimit = 0,
-                Window = TimeSpan.FromMinutes(15) // W oknie czasowym 15 minut
+                Window = TimeSpan.FromMinutes(15) 
             }));
 });
 
-// 4. Autentykacja JWT z obsługą ciasteczek i WERYFIKACJĄ SESJI
+// 4. Autentykacja JWT z kuloodporną weryfikacją sesji
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options => {
         options.TokenValidationParameters = new TokenValidationParameters {
@@ -61,48 +60,62 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
         options.Events = new JwtBearerEvents {
             OnMessageReceived = context => {
-                // To wyciąga token z ciasteczka przy każdym zapytaniu
+                // Wyciąganie tokena z ciasteczka
                 context.Token = context.Request.Cookies["sunfire_auth"];
                 return Task.CompletedTask;
             },
-            // NOWOŚĆ: Sprawdzamy, czy token zgadza się z tym w bazie danych!
             OnTokenValidated = async context => {
                 var db = context.HttpContext.RequestServices.GetRequiredService<IMongoDatabase>();
                 var users = db.GetCollection<User>("Users");
                 
-                var username = context.Principal?.Identity?.Name;
-                var token = context.SecurityToken as JwtSecurityToken;
+                // Wyciągamy tożsamość użytkownika
+                var username = context.Principal?.Identity?.Name 
+                               ?? context.Principal?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
                 
-                if (username == null || token == null) {
-                    context.Fail("Brak wymaganych danych w tokenie.");
+                // Pobieramy surowy token bezpośrednio z ciasteczka (naprawia błędy rzutowania JwtSecurityToken)
+                var rawToken = context.Request.Cookies["sunfire_auth"];
+                
+                if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(rawToken)) {
+                    Console.WriteLine("❌ BŁĄD JWT: Brak username lub surowego tokenu.");
+                    context.Fail("Unauthorized");
                     return;
                 }
 
                 var user = await users.Find(u => u.Username == username).FirstOrDefaultAsync();
                 
-                // ZABEZPIECZENIE: Jeśli user nie istnieje lub token z ciasteczka jest inny niż zapisany przy logowaniu w bazie -> Odrzuć!
-                if (user == null || user.CurrentToken != token.RawData) {
-                    context.Fail("Token został unieważniony. Zaloguj się ponownie.");
+                if (user == null) {
+                    Console.WriteLine($"❌ BŁĄD JWT: Nie znaleziono usera {username} w bazie.");
+                    context.Fail("User not found");
+                    return;
                 }
+
+                // Weryfikacja: Czy token w ciasteczku jest tym samym, który zapisał AuthController podczas logowania?
+                if (user.CurrentToken != rawToken) {
+                    Console.WriteLine("❌ BŁĄD JWT: Token unieważniony (niezgodność z bazą).");
+                    context.Fail("Session invalidated");
+                    return;
+                }
+                
+                Console.WriteLine($"✅ SUKCES JWT: Zalogowano {username}");
             }
         };
     });
 
-// 5. CORS - musi zezwalać na Credentials dla ciasteczek
+// 5. CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("SunfirePolicy", corsBuilder =>
     {
-        corsBuilder.WithOrigins(frontendUrl) // Używa zmiennej
+        corsBuilder.WithOrigins(frontendUrl)
                .AllowAnyHeader()
                .AllowAnyMethod()
-               .AllowCredentials(); // Pozwala na przesyłanie ciasteczek
+               .AllowCredentials(); 
     });
 });
 
 var app = builder.Build();
 
-// 6. Middleware (KOLEJNOŚĆ JEST WAŻNA!)
+// 6. Middleware (Kolejność krytyczna!)
 app.UseCors("SunfirePolicy");
 app.UseStaticFiles();
 

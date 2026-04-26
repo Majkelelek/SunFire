@@ -88,8 +88,8 @@ namespace Server.Controllers
             // Wysyłka ciasteczka
             Response.Cookies.Append(CookieName, tokenString, new CookieOptions {
                 HttpOnly = true,
-                Secure = !isDevelopment, 
-                SameSite = SameSiteMode.Strict,
+                Secure = true, // Wymagane przez przeglądarki dla SameSiteMode.None
+                SameSite = SameSiteMode.None, // Kluczowe! Pozwala wysyłać ciastko z portu 5173 na 5150
                 Path = "/",
                 Expires = DateTime.Now.AddHours(4)
             });

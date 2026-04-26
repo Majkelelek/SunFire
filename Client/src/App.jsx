@@ -8,6 +8,8 @@ import Login from './pages/Login';
 import PortfolioPage from './pages/PortfolioPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import AboutPage from './pages/AboutPage';
+import Footer from './components/Footer';
+import LegalInfo from './pages/LegalInfo';
 
 function App() {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -61,10 +63,14 @@ function App() {
               </ProtectedRoute>
             } 
           />
-          
+          <Route path="/polityka-prywatnosci" element={<LegalInfo />} />
           <Route path="/portfolio" element={<PortfolioPage isAdmin={isAdmin} />} />
         </Routes>
       </div>
+
+      {/* --- TUTAJ DAJESZ STOPKĘ --- */}
+      <Footer />
+      
     </Router>
   );
 }
