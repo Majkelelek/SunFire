@@ -18,7 +18,9 @@ export default function AboutPage({ isAdmin }) {
             const res = await fetch(`${apiUrl}/api/about`);
             const result = await res.json();
             setData(result);
-        } catch (err) { console.error(err); }
+        } catch (err) {
+            console.error("Błąd ładowania danych o mnie:");
+        }
         finally { setLoading(false); }
     };
 

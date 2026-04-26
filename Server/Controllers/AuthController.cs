@@ -82,16 +82,49 @@ namespace Server.Controllers
             successUpdate = successUpdate.Set(u => u.CurrentToken, tokenString);
             await _users.UpdateOneAsync(u => u.Id == user.Id, successUpdate);
 
+            var isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development"; // Sprawdzenie środowiska
+
             // Wysyłka ciasteczka
             Response.Cookies.Append(CookieName, tokenString, new CookieOptions {
                 HttpOnly = true,
-                Secure = false, 
-                SameSite = SameSiteMode.Lax,
+                Secure = !isDevelopment, 
+                SameSite = SameSiteMode.Strict,
                 Path = "/",
                 Expires = DateTime.Now.AddHours(4)
             });
 
             return Ok(new { message = "Zalogowano" });
+        }
+        [HttpPost("register")]
+        [Authorize] 
+        public async Task<IActionResult> Register([FromBody] LoginRequest request)
+        {
+            // 1. Walidacja danych wejściowych
+            if (string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
+            {
+                return BadRequest("Nazwa użytkownika i hasło są wymagane.");
+            }
+
+            // 2. Sprawdzenie, czy użytkownik o takiej nazwie już istnieje
+            var existingUser = await _users.Find(u => u.Username.ToLower() == request.Username.ToLower()).FirstOrDefaultAsync();
+            if (existingUser != null)
+            {
+                return BadRequest("Użytkownik o podanej nazwie już istnieje.");
+            }
+
+            // 3. Tworzenie nowego użytkownika z bezpiecznie zahashowanym hasłem
+            var newUser = new User
+            {
+                Username = request.Username,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
+                FailedAttempts = 0,
+                LockoutEnd = null
+            };
+
+            // 4. Zapis do bazy danych
+            await _users.InsertOneAsync(newUser);
+
+            return Ok(new { message = "Konto nowego administratora zostało pomyślnie utworzone." });
         }
 
         [HttpGet("check")]

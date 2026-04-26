@@ -14,7 +14,7 @@ export default function Navbar({ isAdmin, setIsAdmin }) {
       setIsAdmin(false);
       navigate('/');
     } catch (err) {
-      console.error("Błąd wylogowania", err);
+      console.error("Błąd wylogowania");
     }
   };
 

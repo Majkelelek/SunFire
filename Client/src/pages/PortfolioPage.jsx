@@ -20,7 +20,7 @@ const PortfolioPage = ({ isAdmin }) => {
             const data = await res.json();
             setProjects(data);
         } catch (err) {
-            console.error("Błąd ładowania projektów:", err);
+            console.error("Błąd ładowania projektów:");
         } finally {
             setLoading(false);
         }

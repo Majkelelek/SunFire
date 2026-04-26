@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using System.Net.Mail;
 using Server.Models;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Server.Controllers
 {
@@ -10,9 +11,9 @@ namespace Server.Controllers
     public class ContactController : ControllerBase
     {
         [HttpPost]
+        [EnableRateLimiting("ContactSpamProtection")] // Ochrona przed spamem
         public async Task<IActionResult> SendEmail([FromBody] ContactMessage contact)
         {
-            // Pobieramy "bezużyteczne" wcześniej zmienne z pliku .env
             var senderEmail = Environment.GetEnvironmentVariable("EMAIL_SENDER_EMAIL");
             var senderPassword = Environment.GetEnvironmentVariable("EMAIL_SENDER_PASSWORD");
 

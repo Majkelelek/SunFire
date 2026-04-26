@@ -4,6 +4,8 @@ using MongoDB.Driver;
 using Server.Models;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
+using System.IO;
+using System.Linq;
 
 namespace Server.Controllers
 {
@@ -59,7 +61,16 @@ namespace Server.Controllers
         [Authorize]
         public async Task<IActionResult> UploadBackground(IFormFile file)
         {
-            if (file == null || file.Length == 0) return BadRequest("Nie wybrano pliku");
+            if (file == null || file.Length == 0) 
+                return BadRequest("Nie wybrano pliku");
+
+            // --- ZABEZPIECZENIE TYPU I ROZMIARU PLIKU ---
+            if (!IsValidImage(file))
+                return BadRequest("Niedozwolony typ pliku. Dozwolone są tylko obrazy (JPG, PNG, WEBP, GIF).");
+
+            if (file.Length > 10 * 1024 * 1024)
+                return BadRequest("Plik przekracza limit 10MB.");
+            // ---------------------------------------------
 
             // 1. Przesyłanie do Cloudinary
             var uploadResult = new ImageUploadResult();
@@ -93,6 +104,7 @@ namespace Server.Controllers
 
             return Ok(new { imageUrl = url });
         }
+
         [HttpDelete("remove-bg")]
         [Authorize]
         public async Task<IActionResult> RemoveBackground()
@@ -107,17 +119,24 @@ namespace Server.Controllers
 
             return Ok(new { message = "Zdjęcie tła zostało usunięte" });
         }
+
         [HttpPost("upload-image")]
         [Authorize]
         public async Task<IActionResult> UploadImage(IFormFile file)
         {
-            if (file == null || file.Length == 0) return BadRequest("Brak pliku");
+            if (file == null || file.Length == 0) 
+                return BadRequest("Brak pliku");
+
+            // --- ZABEZPIECZENIE TYPU I ROZMIARU PLIKU ---
+            if (!IsValidImage(file))
+                return BadRequest("Niedozwolony typ pliku. Dozwolone są tylko obrazy (JPG, PNG, WEBP, GIF).");
 
             long maxFileSize = 10 * 1024 * 1024; 
-                if (file.Length > maxFileSize)
-                {
-                    return BadRequest("Plik przekracza limit 10MB.");
-                }
+            if (file.Length > maxFileSize)
+            {
+                return BadRequest("Plik przekracza limit 10MB.");
+            }
+            // ---------------------------------------------
                 
             using var stream = file.OpenReadStream();
             var uploadParams = new ImageUploadParams()
@@ -130,6 +149,21 @@ namespace Server.Controllers
             var result = await _cloudinary.UploadAsync(uploadParams);
             return Ok(new { url = result.SecureUrl.ToString() });
         }
+
+        // --- PRYWATNA METODA WALIDUJĄCA PLIK ---
+        private bool IsValidImage(IFormFile file)
+        {
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp", ".gif" };
+            var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+            
+            if (string.IsNullOrEmpty(extension) || !allowedExtensions.Contains(extension))
+                return false;
+
+            var allowedMimeTypes = new[] { "image/jpeg", "image/png", "image/webp", "image/gif" };
+            if (!allowedMimeTypes.Contains(file.ContentType.ToLowerInvariant()))
+                return false;
+
+            return true;
+        }
     }
-    
 }

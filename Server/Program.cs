@@ -3,6 +3,8 @@ using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
 using System.Text;
 using DotNetEnv;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +18,23 @@ var mongoUri = Environment.GetEnvironmentVariable("SUNFIRE_MONGO_URI")
 // 2. Usługi
 builder.Services.AddSingleton<IMongoClient>(new MongoClient(mongoUri));
 builder.Services.AddControllers();
+builder.Services.AddRateLimiter(options =>
+{
+    // Jeśli limit zostanie przekroczony, zwracamy błąd 429 (Too Many Requests)
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.AddPolicy("ContactSpamProtection", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            // Grupujemy żądania po adresie IP użytkownika
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            factory: partition => new FixedWindowRateLimiterOptions
+            {
+                AutoReplenishment = true,
+                PermitLimit = 3, // Maksymalnie 3 wiadomości
+                QueueLimit = 0,
+                Window = TimeSpan.FromMinutes(15) // W oknie czasowym 15 minut
+            }));
+});
 
 // 3. Autentykacja JWT z obsługą ciasteczek
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -37,12 +56,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 // 4. CORS - musi zezwalać na Credentials dla ciasteczek
-builder.Services.AddCors(options => {
-    options.AddPolicy("SunfirePolicy", p => 
-        p.WithOrigins("http://localhost:5173")
-         .AllowAnyMethod()
-         .AllowAnyHeader()
-         .AllowCredentials());
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("SunfirePolicy", builder =>
+    {
+        builder.WithOrigins("http://localhost:5173") // W produkcji zmień to na docelową domenę!
+               .AllowAnyHeader()
+               .AllowAnyMethod()
+               .AllowCredentials(); // Pozwala na przesyłanie ciasteczek
+    });
 });
 
 var app = builder.Build();
@@ -50,20 +72,9 @@ var app = builder.Build();
 // 5. Middleware (KOLEJNOŚĆ!)
 app.UseCors("SunfirePolicy");
 app.UseStaticFiles();
-app.Use(async (context, next) =>
-{
-    if (context.Request.Method == "OPTIONS")
-    {
-        context.Response.Headers.Append("Access-Control-Allow-Origin", "http://localhost:5173");
-        context.Response.Headers.Append("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
-        context.Response.Headers.Append("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-        context.Response.Headers.Append("Access-Control-Allow-Credentials", "true");
-        context.Response.StatusCode = 200;
-        await context.Response.CompleteAsync();
-        return;
-    }
-    await next();
-});
+
+app.UseRateLimiter();
+
 app.UseAuthentication();
 app.UseAuthorization();
 

@@ -51,7 +51,6 @@ export default function Login({ setIsAdmin, checkAuth }) {
       }
     } catch (err) {
       setError('Błąd połączenia z serwerem.');
-      console.error(err);
     } finally {
       setLoading(false);
     }
