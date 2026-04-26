@@ -13,6 +13,7 @@ namespace Server.Models
         public string? CurrentToken { get; set; }
         public int FailedAttempts { get; set; } = 0;
         public DateTime? LockoutEnd { get; set; }
+        
     }
 
 }

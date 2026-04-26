@@ -5,6 +5,8 @@ using System.Text;
 using DotNetEnv;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Threading.RateLimiting;
+using System.IdentityModel.Tokens.Jwt; // Wymagane do odczytania tokena
+using Server.Models; // Wymagane do pobrania modelu User
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,11 +21,10 @@ var mongoUri = Environment.GetEnvironmentVariable("SUNFIRE_MONGO_URI")
 var frontendUrl = Environment.GetEnvironmentVariable("FRONTEND_URL") 
     ?? "http://localhost:5173"; 
 
-
 // 2. Usługi
 builder.Services.AddSingleton<IMongoClient>(new MongoClient(mongoUri));
 
-// NOWOŚĆ: Wstrzykiwanie gotowej bazy danych od razu, by odchudzić konstruktory w Controllerach
+// Wstrzykiwanie gotowej bazy danych od razu, by odchudzić konstruktory w Controllerach
 builder.Services.AddSingleton<IMongoDatabase>(sp => 
     sp.GetRequiredService<IMongoClient>().GetDatabase("SunfireDB"));
 
@@ -48,7 +49,7 @@ builder.Services.AddRateLimiter(options =>
             }));
 });
 
-// 4. Autentykacja JWT z obsługą ciasteczek
+// 4. Autentykacja JWT z obsługą ciasteczek i WERYFIKACJĄ SESJI
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options => {
         options.TokenValidationParameters = new TokenValidationParameters {
@@ -63,6 +64,26 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 // To wyciąga token z ciasteczka przy każdym zapytaniu
                 context.Token = context.Request.Cookies["sunfire_auth"];
                 return Task.CompletedTask;
+            },
+            // NOWOŚĆ: Sprawdzamy, czy token zgadza się z tym w bazie danych!
+            OnTokenValidated = async context => {
+                var db = context.HttpContext.RequestServices.GetRequiredService<IMongoDatabase>();
+                var users = db.GetCollection<User>("Users");
+                
+                var username = context.Principal?.Identity?.Name;
+                var token = context.SecurityToken as JwtSecurityToken;
+                
+                if (username == null || token == null) {
+                    context.Fail("Brak wymaganych danych w tokenie.");
+                    return;
+                }
+
+                var user = await users.Find(u => u.Username == username).FirstOrDefaultAsync();
+                
+                // ZABEZPIECZENIE: Jeśli user nie istnieje lub token z ciasteczka jest inny niż zapisany przy logowaniu w bazie -> Odrzuć!
+                if (user == null || user.CurrentToken != token.RawData) {
+                    context.Fail("Token został unieważniony. Zaloguj się ponownie.");
+                }
             }
         };
     });
@@ -72,7 +93,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("SunfirePolicy", corsBuilder =>
     {
-        corsBuilder.WithOrigins(frontendUrl) // Używa zmiennej zamiast wpisanego na sztywno "http://localhost:5173"
+        corsBuilder.WithOrigins(frontendUrl) // Używa zmiennej
                .AllowAnyHeader()
                .AllowAnyMethod()
                .AllowCredentials(); // Pozwala na przesyłanie ciasteczek
@@ -81,7 +102,7 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// 6. Middleware (KOLEJNOŚĆ!)
+// 6. Middleware (KOLEJNOŚĆ JEST WAŻNA!)
 app.UseCors("SunfirePolicy");
 app.UseStaticFiles();
 
