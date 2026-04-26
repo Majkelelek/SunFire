@@ -1,24 +1,24 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import './SurveyForm.css';
 
 const SurveyForm = () => {
     const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
-    // NOWOŚĆ: Stan przechowujący informację, czy checkbox jest zaznaczony
     const [consent, setConsent] = useState(false); 
     const [errors, setErrors] = useState({});
     const [status, setStatus] = useState('');
     const [isSent, setIsSent] = useState(false); 
+    const [showPrivacy, setShowPrivacy] = useState(false);
     
     const apiUrl = import.meta.env.VITE_API_URL;
     
-    const validateEmail = (email) => {
-        return /\S+@\S+\.\S+/.test(email);
-    };
+    const validateEmail = (email) => /\S+@\S+\.\S+/.test(email);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         let tempErrors = {};
 
+        // Walidacja pól
         if (!formData.name.trim()) tempErrors.name = "Imię jest wymagane";
         if (!formData.subject.trim()) tempErrors.subject = "Temat jest wymagany";
         if (!formData.message.trim()) tempErrors.message = "Wpisz treść wiadomości";
@@ -26,16 +26,16 @@ const SurveyForm = () => {
         if (!formData.email.trim()) {
             tempErrors.email = "E-mail jest wymagany";
         } else if (!validateEmail(formData.email)) {
-            tempErrors.email = "Niepoprawny format (brak @ lub kropki)";
+            tempErrors.email = "Niepoprawny format";
         }
 
-        // NOWOŚĆ: Walidacja checkboxa
         if (!consent) {
-            tempErrors.consent = "Zaznaczenie zgody jest wymagane, aby wysłać wiadomość";
+            tempErrors.consent = "Zaznaczenie zgody jest wymagane";
         }
 
         setErrors(tempErrors);
 
+        // Jeśli są błędy, zatrzymaj wysyłanie
         if (Object.keys(tempErrors).length > 0) return;
 
         setStatus('Wysyłanie...');
@@ -44,14 +44,13 @@ const SurveyForm = () => {
             const res = await fetch(`${apiUrl}/api/Contact`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                // Nie wysyłamy stanu 'consent' do C#, bo backend oczekuje tylko danych wiadomości
                 body: JSON.stringify(formData) 
             });
 
             if (res.ok) {
                 setIsSent(true); 
                 setFormData({ name: '', email: '', subject: '', message: '' });
-                setConsent(false); // Resetujemy checkbox po udanym wysłaniu
+                setConsent(false);
                 setErrors({});
                 setStatus(''); 
             } else {
@@ -63,67 +62,124 @@ const SurveyForm = () => {
         }
     };
 
+    // --- WIDOK PO UPROSZCZONYM WYSŁANIU (Success Card) ---
     if (isSent) {
         return (
             <div className="success-card">
-                <div className="success-icon-wrapper">
-                    <svg className="success-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                    </svg>
-                </div>
-                <h3 className="success-title">Wiadomość wysłana!</h3>
+                <div className="success-badge">WYSŁANO!</div>
+                <h3 className="success-title">Wiadomość dotarła do celu</h3>
                 <p className="success-text">
                     Dziękuję za kontakt. Zaraz ją odczytam i wrócę z odpowiedzią najszybciej, jak to możliwe.
                 </p>
                 <button onClick={() => setIsSent(false)} className="success-btn">
-                    Wyślij kolejną
+                    Wyślij kolejną wiadomość
                 </button>
             </div>
         );
     }
 
     return (
-        <form className="survey-form" onSubmit={handleSubmit} noValidate>
-            <h2>Skontaktuj się ze mną</h2>
-            
-            <div className="input-group">
-                <input className={errors.name ? 'error-border' : ''} type="text" placeholder="Twoje Imię" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
-                {errors.name && <span className="error-msg">{errors.name}</span>}
-            </div>
-
-            <div className="input-group">
-                <input className={errors.email ? 'error-border' : ''} type="email" placeholder="Twój E-mail" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} />
-                {errors.email && <span className="error-msg">{errors.email}</span>}
-            </div>
-
-            <div className="input-group">
-                <input className={errors.subject ? 'error-border' : ''} type="text" placeholder="Temat" value={formData.subject} onChange={(e) => setFormData({...formData, subject: e.target.value})} />
-                {errors.subject && <span className="error-msg">{errors.subject}</span>}
-            </div>
-
-            <div className="input-group">
-                <textarea className={errors.message ? 'error-border' : ''} placeholder="Twoja wiadomość..." value={formData.message} onChange={(e) => setFormData({...formData, message: e.target.value})} />
-                {errors.message && <span className="error-msg">{errors.message}</span>}
-            </div>
-
-            {/* NOWOŚĆ: Sekcja Checkboxa */}
-            <div className="input-group checkbox-group">
-                <label className="checkbox-label">
+        <div className="survey-container">
+            <form className="survey-form" onSubmit={handleSubmit} noValidate>
+                <h2>Skontaktuj się ze mną</h2>
+                
+                <div className="input-group">
                     <input 
-                        type="checkbox" 
-                        checked={consent} 
-                        onChange={(e) => setConsent(e.target.checked)} 
+                        className={errors.name ? 'error-border' : ''} 
+                        type="text" 
+                        placeholder="Twoje Imię" 
+                        value={formData.name} 
+                        onChange={(e) => setFormData({...formData, name: e.target.value})} 
                     />
-                    <span>Rozumiem, że dalszy kontakt odbywać się będzie drogą mailową, i wyrażam zgodę na przetwarzanie moich danych podanych w formularzu w celu odpowiedzi na moją wiadomość.</span>
-                </label>
-                {errors.consent && <span className="error-msg" style={{ display: 'block', marginTop: '5px' }}>{errors.consent}</span>}
-            </div>
+                    {errors.name && <span className="error-msg">{errors.name}</span>}
+                </div>
 
-            <button type="submit">Wyślij Formularz</button>
-            
-            {status && <p className="form-status">{status}</p>}
-        </form>
+                <div className="input-group">
+                    <input 
+                        className={errors.email ? 'error-border' : ''} 
+                        type="email" 
+                        placeholder="Twój E-mail" 
+                        value={formData.email} 
+                        onChange={(e) => setFormData({...formData, email: e.target.value})} 
+                    />
+                    {errors.email && <span className="error-msg">{errors.email}</span>}
+                </div>
+
+                <div className="input-group">
+                    <input 
+                        className={errors.subject ? 'error-border' : ''} 
+                        type="text" 
+                        placeholder="Temat" 
+                        value={formData.subject} 
+                        onChange={(e) => setFormData({...formData, subject: e.target.value})} 
+                    />
+                    {errors.subject && <span className="error-msg">{errors.subject}</span>}
+                </div>
+
+                <div className="input-group">
+                    <textarea 
+                        className={errors.message ? 'error-border' : ''} 
+                        placeholder="Twoja wiadomość..." 
+                        value={formData.message} 
+                        onChange={(e) => setFormData({...formData, message: e.target.value})} 
+                    />
+                    {errors.message && <span className="error-msg">{errors.message}</span>}
+                </div>
+
+                <div className="input-group checkbox-group">
+                    <label className="checkbox-label">
+                        <input 
+                            type="checkbox" 
+                            checked={consent} 
+                            onChange={(e) => setConsent(e.target.checked)} 
+                        />
+                        <span>
+                            Wyrażam zgodę na przetwarzanie danych w celu odpowiedzi na moją wiadomość. 
+                            Zapoznaj się z moją <span onClick={() => setShowPrivacy(true)} className="privacy-link">polityką prywatności</span>.
+                        </span>
+                    </label>
+                    {errors.consent && <span className="error-msg">{errors.consent}</span>}
+                </div>
+
+                <button type="submit" className="sunfire-submit-btn">Wyślij Formularz</button>
+                
+                {status && <p className="form-status">{status}</p>}
+            </form>
+
+            {/* --- MODAL POLITYKI PRYWATNOŚCI (Poza formem dla czystego układu) --- */}
+            {showPrivacy && (
+                <div className="privacy-modal-overlay" onClick={() => setShowPrivacy(false)}>
+                    <div className="privacy-modal-content" onClick={(e) => e.stopPropagation()}>
+                        <button className="close-modal" onClick={() => setShowPrivacy(false)}>×</button>
+                        
+                        <div className="modal-scroll-area">
+                            <h1 className="modal-title">POLITYKA PRYWATNOŚCI</h1>
+                            <p className="modal-date">Ostatnia aktualizacja: 26.04.2026</p>
+
+                            <section className="modal-section">
+                                <h2><span>01.</span> Administrator Danych</h2>
+                                <p>Administratorem danych osobowych serwisu <strong>Sunfire </strong> jest właściciel strony. Szanuję Twoją prywatność i nie gromadzę danych w celach marketingowych. Wszelkie pytania dotyczące Twoich danych możesz kierować poprzez formularz w zakładce Kontakt.</p>
+                            </section>
+
+                            <section className="modal-section">
+                                <h2><span>02.</span> Formularz Kontaktowy</h2>
+                                <p>Dane przesyłane za pomocą formularza (imię, adres e-mail, treść wiadomości) nie są zapisywane w bazie danych serwisu. Trafiają one bezpośrednio na moją skrzynkę e-mail jako standardowa wiadomość. Przetwarzam je wyłącznie w celu udzielenia odpowiedzi na Twoje zapytanie.</p>
+                            </section>
+
+                            <section className="modal-section">
+                                <h2><span>03.</span> Twoje Prawa (RODO)</h2>
+                                <p>W każdej chwili masz prawo zażądać wglądu w naszą korespondencję mailową, jej sprostowania lub całkowitego usunięcia. Wystarczy wysłać krótką informację – szanuję Twoje "prawo do bycia zapomnianym".</p>
+                            </section>
+
+                            <div className="modal-cookie-box">
+                                <h3>Informacja o plikach Cookies</h3>
+                                <p>Serwis wykorzystuje ciasteczka wyłącznie do celów technicznych. Dla zwykłego użytkownika strona nie zapisuje żadnych plików cookies śledzących.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
     );
 };
 

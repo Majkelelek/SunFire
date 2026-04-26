@@ -12,8 +12,8 @@
 
 /* --- UKŁAD (LAYOUT) --- */
 .content-wrapper {
-  padding-top: var(--nav-height); /* Miejsce pod navbarem */
-  flex: 1; /* TO WAŻNE: Środek "puchnie", wypychając stopkę na dół! */
+  padding-top: var(--nav-height); 
+  flex: 1; /* Wypycha stopkę na dół */
   display: flex;
   flex-direction: column;
 }
@@ -29,7 +29,6 @@
 .work-card {
   position: relative;
   transition: border-color 0.4s ease;
-  /* (Jeśli miałeś tu inne marginesy/paddingi, dopisz je śmiało) */
 }
 
 .work-card:hover {
@@ -53,10 +52,12 @@ form {
   gap: 25px;
 }
 
+/* NAPRAWIONE: Usunięty grid, który psuł szerokość inputów */
 .input-group {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 10px;
 }
 
 input, select, textarea {
@@ -68,6 +69,7 @@ input, select, textarea {
   color: white;
   font-size: 1rem;
   transition: all 0.3s ease;
+  box-sizing: border-box; /* Gwarantuje, że padding nie rozpycha pola */
 }
 
 input:focus, textarea:focus, select:focus {
@@ -90,4 +92,20 @@ input:focus, textarea:focus, select:focus {
 
 .sunfire-submit-btn:hover {
   background-color: #e64500;
+}
+
+
+.checkbox-label input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none; /* Dla Safari/Chrome */
+    min-width: 20px !important; /* Wymuszamy stałą szerokość */
+    max-width: 20px !important;
+    height: 20px !important;
+    border: 2px solid #444;
+    border-radius: 6px;
+    cursor: pointer;
+    display: grid;
+    place-content: center;
+    background: rgba(255, 255, 255, 0.02);
+    margin: 0; /* Usuwa zbędne marginesy */
 }

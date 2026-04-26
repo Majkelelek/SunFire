@@ -11,12 +11,14 @@ import AboutPage from './pages/AboutPage';
 import Footer from './components/Footer';
 import LegalInfo from './pages/LegalInfo';
 
+// Upewnij się, że ten import istnieje, aby style układu działały
+import './App.css'; 
+
 function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
   const apiUrl = import.meta.env.VITE_API_URL;
 
-  // Funkcja sprawdzająca autoryzację, którą przekażemy do komponentu Login
   const checkAuth = useCallback(async () => {
     try {
       const res = await fetch(`${apiUrl}/api/auth/check`, { credentials: 'include' });
@@ -30,7 +32,6 @@ function App() {
     }
   }, [apiUrl]);
 
-  // Sprawdzanie uprawnień przy starcie aplikacji
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
@@ -39,22 +40,18 @@ function App() {
 
   return (
     <Router>
-      {/* Navbar automatycznie pokaże linki admina, gdy isAdmin zmieni się na true */}
+      {/* Cała zawartość Routera ląduje w #root (zdefiniowanym w index.html) */}
       <Navbar isAdmin={isAdmin} setIsAdmin={setIsAdmin} />
       
-      <div className="content-wrapper">
+      <main className="content-wrapper">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/contact" element={<ContactPage />} />
-          
-          {/* Przekazujemy funkcje do komponentu Login */}
           <Route 
             path="/login" 
             element={<Login setIsAdmin={setIsAdmin} checkAuth={checkAuth} />} 
           />
-          
           <Route path="/about" element={<AboutPage isAdmin={isAdmin} />} />
-          
           <Route 
             path="/admin" 
             element={
@@ -66,11 +63,9 @@ function App() {
           <Route path="/polityka-prywatnosci" element={<LegalInfo />} />
           <Route path="/portfolio" element={<PortfolioPage isAdmin={isAdmin} />} />
         </Routes>
-      </div>
+      </main>
 
-      {/* --- TUTAJ DAJESZ STOPKĘ --- */}
       <Footer />
-      
     </Router>
   );
 }
