@@ -135,3 +135,93 @@
     background: linear-gradient(90deg, transparent, #ff4d00, transparent);
     opacity: 0.3;
 }
+/* --- MENU MOBILNE (HAMBURGER) --- */
+
+/* Trik: .nav-menu nie zaburza Twojego dotychczasowego układu na PC! */
+.nav-menu {
+    display: contents; 
+}
+
+/* Domyślnie ukrywamy hamburgera na komputerach */
+.hamburger {
+    display: none;
+    cursor: pointer;
+    position: relative;
+    z-index: 1001;
+}
+
+.hamburger .bar {
+    display: block;
+    width: 25px;
+    height: 3px;
+    margin: 5px auto;
+    background-color: #fff;
+    border-radius: 3px;
+    transition: all 0.3s ease-in-out;
+}
+
+/* --- RESPONSYWNOŚĆ (Ekrany poniżej 900px) --- */
+@media (max-width: 900px) {
+    .hamburger {
+        display: block;
+    }
+
+    /* Animacja przemiany hamburgera w "X" (krzyżyk) */
+    .hamburger.active .bar:nth-child(2) {
+        opacity: 0;
+    }
+    .hamburger.active .bar:nth-child(1) {
+        transform: translateY(8px) rotate(45deg);
+        background-color: #ff4d00;
+    }
+    .hamburger.active .bar:nth-child(3) {
+        transform: translateY(-8px) rotate(-45deg);
+        background-color: #ff4d00;
+    }
+
+    /* Wysuwane czarne menu z lewej strony */
+    .nav-menu {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: center;
+        position: fixed;
+        left: -100%; /* Ukryte poza ekranem */
+        top: 80px; /* Zaczyna się równo pod paskiem nawigacji */
+        width: 100%;
+        height: calc(100vh - 80px);
+        background-color: rgba(10, 10, 10, 0.98);
+        border-top: 1px solid rgba(255, 77, 0, 0.2);
+        transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* Płynny wjazd */
+        padding-top: 60px;
+        box-shadow: 10px 10px 30px rgba(0, 0, 0, 0.8);
+    }
+
+    /* Klasa dodawana przez Reacta po kliknięciu */
+    .nav-menu.active {
+        left: 0;
+    }
+
+    /* Układ linków na telefonie */
+    .nav-links {
+        flex-direction: column;
+        gap: 25px;
+        text-align: center;
+    }
+
+    .nav-links a {
+        font-size: 1.3rem; /* Zwiększamy linki na telefonie */
+    }
+
+    .nav-actions {
+        margin-top: 40px;
+        flex-direction: column;
+    }
+
+    .login-link, .logout-btn {
+        width: 220px;
+        text-align: center;
+        padding: 15px;
+        font-size: 1rem;
+    }
+}

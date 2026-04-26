@@ -273,3 +273,10 @@
     letter-spacing: 5px;
     text-transform: uppercase;
 }
+
+@media (max-width: 768px) {
+  .portfolio-container {
+    grid-template-columns: 1fr; /* Wymusza jedną, pełną kolumnę */
+    padding: 10px;
+  }
+}

@@ -12,7 +12,7 @@
 
 /* --- UKŁAD (LAYOUT) --- */
 .content-wrapper {
-  padding-top: var(--nav-height); 
+   
   flex: 1; /* Wypycha stopkę na dół */
   display: flex;
   flex-direction: column;

@@ -87,6 +87,7 @@ const SurveyForm = () => {
                     <input 
                         className={errors.name ? 'error-border' : ''} 
                         type="text" 
+                        maxLength="50"  
                         placeholder="Twoje Imię" 
                         value={formData.name} 
                         onChange={(e) => setFormData({...formData, name: e.target.value})} 
@@ -98,6 +99,8 @@ const SurveyForm = () => {
                     <input 
                         className={errors.email ? 'error-border' : ''} 
                         type="email" 
+                        //maskymalna długość 254 znaków zgodnie ze standardem RFC 5321  
+                        maxLength="254"
                         placeholder="Twój E-mail" 
                         value={formData.email} 
                         onChange={(e) => setFormData({...formData, email: e.target.value})} 
@@ -109,6 +112,8 @@ const SurveyForm = () => {
                     <input 
                         className={errors.subject ? 'error-border' : ''} 
                         type="text" 
+                        //maskymalna długość
+                        maxLength="100"
                         placeholder="Temat" 
                         value={formData.subject} 
                         onChange={(e) => setFormData({...formData, subject: e.target.value})} 
@@ -120,6 +125,8 @@ const SurveyForm = () => {
                     <textarea 
                         className={errors.message ? 'error-border' : ''} 
                         placeholder="Twoja wiadomość..." 
+                        //maskymalna długość
+                        maxLength="2000"
                         value={formData.message} 
                         onChange={(e) => setFormData({...formData, message: e.target.value})} 
                     />

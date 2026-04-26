@@ -327,8 +327,9 @@
 /* --- RESPONSYWNOŚĆ --- */
 @media (max-width: 768px) {
     .survey-form {
-        margin: 20px;
+        margin: 20px auto; /* Dodano 'auto', aby przywrócić centrowanie! */
         padding: 25px;
+        width: 92%; /* Zapobiega dotykaniu bocznych krawędzi ekranu */
     }
     .privacy-modal-content {
         padding: 25px;

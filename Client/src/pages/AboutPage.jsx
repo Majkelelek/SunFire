@@ -76,7 +76,9 @@ export default function AboutPage({ isAdmin }) {
     };
 
     if (loading) return <div className="loading">SYSTEM LOADING...</div>;
+    if (!data) return <div style={{ textAlign: 'center', marginTop: '150px', color: '#ff4d00' }}>(Błąd połączenia z serwerem).</div>;
 
+    <div className="about-container"></div>
     return (
         <div className="about-container">
             <div className="about-bg-noise"></div>

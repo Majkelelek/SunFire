@@ -149,3 +149,23 @@
     font-size: 0.95rem;
     line-height: 1.5;
 }
+
+/* --- RESPONSYWNOŚĆ STRONY GŁÓWNEJ --- */
+@media (max-width: 768px) {
+    /* Zmniejszamy odstępy między przyciskami i zmieniamy układ na kolumnę na bardzo małych ekranach */
+    .hero-btns {
+        flex-direction: column; 
+        gap: 15px;
+        align-items: center;
+        margin-top: 30px;
+    }
+
+    /* Pomniejszamy same przyciski */
+    .btn-primary, .btn-secondary {
+        padding: 15px 30px; /* Mniejsze marginesy wewnętrzne */
+        font-size: 0.9rem;  /* Nieco mniejsza czcionka */
+        width: 100%;        /* Zajmują całą dostępną szerokość kontenera */
+        max-width: 280px;   /* ...ale nie więcej niż 280px */
+        box-sizing: border-box;
+    }
+}
