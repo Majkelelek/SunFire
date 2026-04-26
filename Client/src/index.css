@@ -6,17 +6,22 @@
 }
 
 :root {
-  --primary: #ff4d00;
-  --dark-bg: #0a0a0a;
-  --nav-bg: rgba(10, 10, 10, 0.8); /* Półprzezroczysty czarny */
-  --text-main: #ffffff;
+  /* Domyślne wartości, zanim React pobierze dane z bazy */
+  --theme-bg: #121212; 
+  --theme-accent: #ff8c00;
+  --theme-bg-image: none;
 }
 
 body {
-  background-color: var(--dark-bg);
-  color: var(--text-main);
-  font-family: 'Inter', sans-serif;
-  min-height: 100vh;
+  /* React wstrzyknie tu kolory z bazy, a CSS sam zareaguje na zmianę */
+  background-color: var(--theme-bg);
+  background-image: var(--theme-bg-image);
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  color: white;
+  margin: 0;
+  padding: 0;
 }
 
 /* Naprawa Navbaru */

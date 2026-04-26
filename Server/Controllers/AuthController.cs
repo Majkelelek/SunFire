@@ -6,6 +6,7 @@ using System.Text;
 using MongoDB.Driver;
 using Server.Models;
 using Microsoft.AspNetCore.Authorization;
+using Server.DTOs;
 
 namespace Server.Controllers
 {

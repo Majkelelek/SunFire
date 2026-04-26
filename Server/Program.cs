@@ -15,9 +15,21 @@ var jwtKey = Environment.GetEnvironmentVariable("SUNFIRE_JWT_KEY")
 var mongoUri = Environment.GetEnvironmentVariable("SUNFIRE_MONGO_URI") 
     ?? throw new Exception("Brak MONGO_URI w .env");
 
+// ZABEZPIECZENIE CORS: Pobieranie adresu frontendu ze zmiennych środowiskowych (domyślnie localhost dla deweloperki)
+var frontendUrl = Environment.GetEnvironmentVariable("FRONTEND_URL") 
+    ?? "http://localhost:5173"; 
+
+
 // 2. Usługi
 builder.Services.AddSingleton<IMongoClient>(new MongoClient(mongoUri));
+
+// NOWOŚĆ: Wstrzykiwanie gotowej bazy danych od razu, by odchudzić konstruktory w Controllerach
+builder.Services.AddSingleton<IMongoDatabase>(sp => 
+    sp.GetRequiredService<IMongoClient>().GetDatabase("SunfireDB"));
+
 builder.Services.AddControllers();
+
+// 3. Rate Limiter (Ochrona przed spamem)
 builder.Services.AddRateLimiter(options =>
 {
     // Jeśli limit zostanie przekroczony, zwracamy błąd 429 (Too Many Requests)
@@ -36,7 +48,7 @@ builder.Services.AddRateLimiter(options =>
             }));
 });
 
-// 3. Autentykacja JWT z obsługą ciasteczek
+// 4. Autentykacja JWT z obsługą ciasteczek
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options => {
         options.TokenValidationParameters = new TokenValidationParameters {
@@ -55,12 +67,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// 4. CORS - musi zezwalać na Credentials dla ciasteczek
+// 5. CORS - musi zezwalać na Credentials dla ciasteczek
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("SunfirePolicy", builder =>
+    options.AddPolicy("SunfirePolicy", corsBuilder =>
     {
-        builder.WithOrigins("http://localhost:5173") // W produkcji zmień to na docelową domenę!
+        corsBuilder.WithOrigins(frontendUrl) // Używa zmiennej zamiast wpisanego na sztywno "http://localhost:5173"
                .AllowAnyHeader()
                .AllowAnyMethod()
                .AllowCredentials(); // Pozwala na przesyłanie ciasteczek
@@ -69,7 +81,7 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// 5. Middleware (KOLEJNOŚĆ!)
+// 6. Middleware (KOLEJNOŚĆ!)
 app.UseCors("SunfirePolicy");
 app.UseStaticFiles();
 

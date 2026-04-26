@@ -15,10 +15,4 @@ namespace Server.Models
         public DateTime? LockoutEnd { get; set; }
     }
 
-    // TA DEFINICJA ZOSTAJE TYLKO TUTAJ
-    public class LoginRequest 
-    { 
-        public string Username { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty; 
-    }
 }

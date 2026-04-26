@@ -76,9 +76,9 @@ namespace Server.Controllers
                     isUpdate = result.IsAcknowledged 
                 });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return StatusCode(500, $"Błąd bazy danych przy zapisie: {ex.Message}");
+                return StatusCode(500, $"Błąd bazy danych");
             }
         }
     }
