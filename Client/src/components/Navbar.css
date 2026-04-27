@@ -32,8 +32,9 @@
 }
 
 .nav-logo span {
-    color: #ff4d00;
-    text-shadow: 0 0 15px rgba(255, 77, 0, 0.5);
+color: var(--sunfire-accent);
+    /* Poświata tekstu również na zmiennej */
+    text-shadow: 0 0 40px var(--sunfire-accent);
 }
 
 .nav-logo:hover {
@@ -70,8 +71,8 @@
     left: 0;
     width: 0;
     height: 2px;
-    background: #ff4d00;
-    box-shadow: 0 0 10px #ff4d00;
+    background: var(--sunfire-accent, #ff4d00);
+    box-shadow: 0 0 10px var(--sunfire-accent, #ff4d00);
     transition: 0.3s;
 }
 
@@ -81,7 +82,7 @@
 
 /* Specjalny kolor dla Panelu Admina */
 .nav-admin-link {
-    color: #ff4d00 !important;
+    color: var(--sunfire-accent, #ff4d00) !important;
     font-weight: 800 !important;
 }
 
@@ -107,9 +108,9 @@
 }
 
 .logout-btn {
-    background: rgba(255, 77, 0, 0.1);
-    color: #ff4d00;
-    border: 1px solid #ff4d00;
+    background: var(--sunfire-accent -10%, #ff4d00);
+    color: white;
+    border: 1px solid var(--sunfire-accent, #ff4d00);
     padding: 8px 20px;
     border-radius: 8px;
     font-weight: 800;
@@ -120,9 +121,9 @@
 }
 
 .logout-btn:hover {
-    background: #ff4d00;
+    background: var(--sunfire-accent, #ff4d00);
     color: #fff;
-    box-shadow: 0 0 20px rgba(255, 77, 0, 0.4);
+    box-shadow: 0 0 20px var(--sunfire-accent);
 }
 
 /* Poświata pod całym navbarem (delikatna) */
@@ -132,7 +133,7 @@
     left: 0;
     width: 100%;
     height: 1px;
-    background: linear-gradient(90deg, transparent, #ff4d00, transparent);
+    background: linear-gradient(90deg, transparent, var(--sunfire-accent, #ff4d00), transparent);
     opacity: 0.3;
 }
 /* --- MENU MOBILNE (HAMBURGER) --- */
@@ -159,6 +160,22 @@
     border-radius: 3px;
     transition: all 0.3s ease-in-out;
 }
+.navbar-logo {
+    color: var(--sunfire-accent) !important; /* */
+}
+
+.nav-link:hover, .nav-link.active {
+    color: var(--sunfire-accent); /* */
+}
+
+.nav-link.active::after {
+    background: var(--sunfire-accent); /* Linia pod aktywnym linkiem */
+}
+
+.logout-btn {
+    border: 1px solid var(--sunfire-accent); /* */
+    color: var(--sunfire-accent); /* */
+}
 
 /* --- RESPONSYWNOŚĆ (Ekrany poniżej 900px) --- */
 @media (max-width: 900px) {
@@ -172,11 +189,11 @@
     }
     .hamburger.active .bar:nth-child(1) {
         transform: translateY(8px) rotate(45deg);
-        background-color: #ff4d00;
+        background-color: var(--sunfire-accent, #ff4d00);
     }
     .hamburger.active .bar:nth-child(3) {
         transform: translateY(-8px) rotate(-45deg);
-        background-color: #ff4d00;
+        background-color: var(--sunfire-accent, #ff4d00);
     }
 
     /* Wysuwane czarne menu z lewej strony */

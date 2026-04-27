@@ -1,9 +1,16 @@
 /* --- FUNDAMENTY SUNFIRE --- */
 :root {
-  --primary: #ff4d00;       /* Ognisty pomarańcz */
-  --primary-glow: rgba(255, 77, 0, 0.4);
-  --dark-bg: #050505;       /* Głęboka, czysta czerń */
-  --card-bg: #111111;       /* Ciemny szary dla kart */
+  /* Dynamiczna zmienna wstrzykiwana przez App.jsx */
+  --sunfire-accent: #ff4d00; 
+  
+  /* Łączymy starą zmienną --primary z nową dynamiczną */
+  --primary: var(--sunfire-accent);
+  
+  /* Dynamiczna poświata używająca color-mix */
+  --primary-glow: color-mix(in srgb, var(--sunfire-accent), transparent 60%);
+  
+  --dark-bg: #050505;
+  --card-bg: #111111;
   --input-bg: #1a1a1a;
   --text-main: #ffffff;
   --text-dim: #888888;
@@ -12,8 +19,7 @@
 
 /* --- UKŁAD (LAYOUT) --- */
 .content-wrapper {
-   
-  flex: 1; /* Wypycha stopkę na dół */
+  flex: 1;
   display: flex;
   flex-direction: column;
 }
@@ -32,8 +38,8 @@
 }
 
 .work-card:hover {
-  border-color: var(--primary);
-  color: var(--primary);
+  border-color: var(--sunfire-accent);
+  color: var(--sunfire-accent);
 }
 
 /* --- FORMULARZ (SURVEY) --- */
@@ -52,7 +58,6 @@ form {
   gap: 25px;
 }
 
-/* NAPRAWIONE: Usunięty grid, który psuł szerokość inputów */
 .input-group {
   display: flex;
   flex-direction: column;
@@ -69,36 +74,41 @@ input, select, textarea {
   color: white;
   font-size: 1rem;
   transition: all 0.3s ease;
-  box-sizing: border-box; /* Gwarantuje, że padding nie rozpycha pola */
+  box-sizing: border-box;
 }
 
 input:focus, textarea:focus, select:focus {
   outline: none;
-  border-color: var(--primary);
+  border-color: var(--sunfire-accent);
   background-color: #222;
-  box-shadow: 0 0 0 4px rgba(255, 77, 0, 0.1);
+  /* Dynamiczny cień przy focusie */
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--sunfire-accent), transparent 90%);
 }
 
+/* --- PRZYCISK (Dostosowany do motywu) --- */
 .sunfire-submit-btn {
-  background: var(--primary);
+  background: var(--sunfire-accent);
   color: white;
   padding: 15px 30px;
   border: none;
   border-radius: 8px;
   font-weight: bold;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
 }
 
 .sunfire-submit-btn:hover {
-  background-color: #e64500;
+    /* Zamiast sztywnego e64500 używamy lekkiego rozjaśnienia/przyciemnienia */
+    filter: brightness(1.1);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px color-mix(in srgb, var(--sunfire-accent), transparent 60%);
 }
 
-
+/* --- CHECKBOX --- */
 .checkbox-label input[type="checkbox"] {
     appearance: none;
-    -webkit-appearance: none; /* Dla Safari/Chrome */
-    min-width: 20px !important; /* Wymuszamy stałą szerokość */
+    -webkit-appearance: none;
+    min-width: 20px !important;
     max-width: 20px !important;
     height: 20px !important;
     border: 2px solid #444;
@@ -107,5 +117,24 @@ input:focus, textarea:focus, select:focus {
     display: grid;
     place-content: center;
     background: rgba(255, 255, 255, 0.02);
-    margin: 0; /* Usuwa zbędne marginesy */
+    margin: 0;
+}
+
+/* Dynamiczny kolor ptaszka w checkboxie */
+.checkbox-label input[type="checkbox"]:checked {
+    border-color: var(--sunfire-accent);
+}
+
+.checkbox-label input[type="checkbox"]::before {
+    content: "";
+    width: 10px;
+    height: 10px;
+    transform: scale(0);
+    background-color: var(--sunfire-accent);
+    clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+    transition: 120ms transform ease-in-out;
+}
+
+.checkbox-label input[type="checkbox"]:checked::before {
+    transform: scale(1);
 }

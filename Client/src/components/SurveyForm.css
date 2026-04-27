@@ -5,7 +5,9 @@
     padding: 40px;
     background: rgba(255, 255, 255, 0.03); /* Glassmorphism */
     backdrop-filter: blur(15px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    -webkit-backdrop-filter: blur(15px);
+    /* Dynamiczna krawędź oparta na akcencie */
+    border: 1px solid color-mix(in srgb, var(--sunfire-accent), transparent 85%);
     border-radius: 20px;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
     display: flex;
@@ -15,18 +17,19 @@
 }
 
 .survey-form h2 {
-    color: var(--primary, #ff4d00);
+    color: var(--sunfire-accent);
     text-align: center;
     font-size: 2rem;
     font-weight: 900;
     text-transform: uppercase;
     letter-spacing: 2px;
     margin-bottom: 10px;
+    text-shadow: 0 0 20px color-mix(in srgb, var(--sunfire-accent), transparent 60%);
 }
 
 /* --- GRUPY WEJŚCIOWE --- */
 .input-group {
-    display: flex !important; /* Wymuszamy flex, gdyby App.css próbował dać grid */
+    display: flex !important;
     flex-direction: column;
     gap: 8px;
     text-align: left;
@@ -38,7 +41,7 @@
     width: 100%;
     padding: 15px;
     background: rgba(0, 0, 0, 0.3);
-    border: 2px solid rgba(255, 255, 255, 0.08);
+    border: 2px solid rgba(255, 255, 255, 0.05);
     border-radius: 12px;
     color: white;
     font-size: 1rem;
@@ -55,28 +58,16 @@
 .survey-form input:focus, 
 .survey-form textarea:focus {
     outline: none;
-    border-color: var(--primary, #ff4d00);
+    border-color: var(--sunfire-accent);
     background: rgba(0, 0, 0, 0.5);
-    box-shadow: 0 0 15px rgba(255, 77, 0, 0.15);
-}
-
-/* --- OBSŁUGA BŁĘDÓW --- */
-.error-border {
-    border-color: #ff4444 !important;
-    background: rgba(255, 68, 68, 0.05) !important;
-}
-
-.error-msg {
-    color: #ff4444;
-    font-size: 0.8rem;
-    font-weight: 600;
-    margin-top: 2px;
+    /* Poświata przy pisaniu dopasowana do koloru */
+    box-shadow: 0 0 15px color-mix(in srgb, var(--sunfire-accent), transparent 80%);
 }
 
 /* --- STYLIZACJA CHECKBOXA --- */
 .checkbox-group {
     margin: 10px 0 20px 0;
-    flex-direction: row !important; /* Nadpisuje domyślne column z .input-group */
+    flex-direction: row !important;
     align-items: flex-start;
 }
 
@@ -95,15 +86,14 @@
 .checkbox-label input[type="checkbox"] {
     appearance: none;
     -webkit-appearance: none;
-    min-width: 20px !important;
-    max-width: 20px !important;
-    height: 20px !important;
+    min-width: 20px;
+    max-width: 20px;
+    height: 20px;
     border: 2px solid #444;
     border-radius: 6px;
     display: grid;
     place-content: center;
     cursor: pointer;
-    transition: all 0.2s ease;
     background: rgba(255, 255, 255, 0.02);
     margin: 0;
     flex-shrink: 0;
@@ -114,22 +104,21 @@
     width: 10px;
     height: 10px;
     transform: scale(0);
-    background-color: var(--primary, #ff4d00);
+    background-color: var(--sunfire-accent);
     clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
     transition: 120ms transform ease-in-out;
 }
 
 .checkbox-label input[type="checkbox"]:checked {
-    border-color: var(--primary, #ff4d00);
+    border-color: var(--sunfire-accent);
 }
 
 .checkbox-label input[type="checkbox"]:checked::before {
     transform: scale(1);
 }
 
-/* Link wewnątrz checkboxa */
 .privacy-link {
-    color: var(--primary, #ff4d00);
+    color: var(--sunfire-accent);
     text-decoration: none;
     font-weight: 700;
     transition: 0.2s;
@@ -140,81 +129,11 @@
     filter: brightness(1.2);
 }
 
-/* --- MODAL POLITYKI PRYWATNOŚCI --- */
-.privacy-modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.85);
-    backdrop-filter: blur(10px);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 10000; /* Bardzo wysoki priorytet */
-    padding: 20px;
-}
-
-.privacy-modal-content {
-    background: #111;
-    width: 100%;
-    max-width: 650px;
-    max-height: 85vh;
-    border-radius: 24px;
-    position: relative;
-    padding: 40px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8);
-    display: flex;
-    flex-direction: column;
-}
-
-.modal-scroll-area {
-    overflow-y: auto;
-    padding-right: 15px;
-}
-
-.modal-scroll-area h2 {
-    color: var(--primary);
-    margin-bottom: 25px;
-    font-size: 1.8rem;
-    text-align: left;
-}
-
-.modal-scroll-area p {
-    color: #ccc;
-    line-height: 1.6;
-    margin-bottom: 15px;
-}
-
-.close-modal {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    width: 40px;
-    height: 40px;
-    background: rgba(255, 255, 255, 0.05);
-    border: none;
-    color: white;
-    font-size: 28px;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: 0.3s;
-    z-index: 10;
-}
-
-.close-modal:hover {
-    background: var(--primary);
-    transform: rotate(90deg);
-}
-
 /* --- PRZYCISK WYSYŁANIA --- */
 .sunfire-submit-btn {
-    background: var(--primary, #ff4d00);
+    position: relative;
+    /* Gradient od wybranego koloru do jaśniejszej wersji tego samego koloru */
+    background: linear-gradient(90deg, var(--sunfire-accent), color-mix(in srgb, var(--sunfire-accent), white 20%));
     color: white;
     padding: 18px;
     border: none;
@@ -226,112 +145,144 @@
     cursor: pointer;
     transition: all 0.3s ease;
     margin-top: 10px;
+    box-shadow: 0 10px 20px color-mix(in srgb, var(--sunfire-accent), transparent 85%);
 }
 
 .sunfire-submit-btn:hover:not(:disabled) {
-    background: #e64500;
     transform: translateY(-3px);
-    box-shadow: 0 10px 20px rgba(255, 77, 0, 0.3);
+    box-shadow: 0 15px 30px color-mix(in srgb, var(--sunfire-accent), transparent 80%);
+    filter: brightness(1.1); /* Zamiast sztywnego koloru e64500 używamy rozjaśnienia */
 }
 
-/* --- KARTA SUKCESU --- */
-.success-card {
-    background: rgba(0, 255, 136, 0.05);
-    border: 1px solid rgba(0, 255, 136, 0.2);
-    padding: 60px 40px;
-    border-radius: 25px;
-    text-align: center;
-    backdrop-filter: blur(15px);
-    max-width: 550px;
-    margin: 60px auto;
-    animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+/* --- MODAL POLITYKI PRYWATNOŚCI --- */
+.privacy-modal-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    padding: 20px;
 }
 
-/* --- STYLIZACJA MODALA JAK NA ZDJĘCIU --- */
+.privacy-modal-content {
+    background: #0d0d0d;
+    width: 100%;
+    max-width: 650px;
+    max-height: 85vh;
+    border-radius: 24px;
+    position: relative;
+    padding: 40px;
+    border: 1px solid color-mix(in srgb, var(--sunfire-accent), transparent 85%);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8);
+    display: flex;
+    flex-direction: column;
+    overflow: visible; /* Zapobiega ucinaniu poświaty przycisku X */
+}
 
-.modal-title {
-    color: var(--primary, #ff4d00);
-    font-size: 2.2rem;
-    font-weight: 900;
-    letter-spacing: 1px;
-    margin-bottom: 5px;
+.modal-scroll-area h2 {
+    color: var(--sunfire-accent); /* Zmieniono z --primary na --sunfire-accent dla pewności */
+    margin-bottom: 25px;
+    font-size: 1.8rem;
     text-align: left;
 }
 
-.modal-date {
-    color: #555;
-    font-size: 0.85rem;
-    margin-bottom: 35px;
-}
-
-.modal-section {
-    margin-bottom: 30px;
-}
-
-.modal-section h2 {
-    font-size: 1.3rem;
-    color: #fff;
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    text-transform: none; /* Wyłączamy uppercase dla podtytułów */
-    letter-spacing: 0;
-}
-
-.modal-section h2 span {
-    color: var(--primary, #ff4d00);
-    font-weight: 900;
-}
-
-.modal-section p {
-    color: #aaa;
-    line-height: 1.7;
-    font-size: 0.95rem;
-}
-
-/* Specjalny box dla Cookies (ten z pomarańczową linią z boku) */
+/* Specjalny box dla Cookies */
 .modal-cookie-box {
-    background: rgba(255, 77, 0, 0.03);
+    background: color-mix(in srgb, var(--sunfire-accent), transparent 97%);
     padding: 25px;
     border-radius: 12px;
-    border-left: 4px solid var(--primary, #ff4d00);
+    border-left: 4px solid var(--sunfire-accent);
     margin-top: 40px;
 }
 
 .modal-cookie-box h3 {
     color: #fff;
-    font-size: 1.1rem;
-    margin-bottom: 10px;
 }
 
-.modal-cookie-box p {
-    color: #888;
-    font-size: 0.9rem;
-    margin: 0;
-    line-height: 1.5;
-}
-
-/* Przycisk zamknięcia (X) dopasowany do stylu */
+/* Przycisk zamknięcia (X) */
 .close-modal {
-    background: #222 !important;
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    background: #1a1a1a !important;
     border: 1px solid #333 !important;
+    color: white !important;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: 0.3s !important;
+    z-index: 10;
 }
 
 .close-modal:hover {
-    background: var(--primary, #ff4d00) !important;
+    background: var(--sunfire-accent) !important;
     color: #000 !important;
+    transform: rotate(90deg);
+}
+/* --- OBSŁUGA BŁĘDÓW (Bardziej widoczna) --- */
+
+/* Ramka wokół błędnego pola */
+.error-border {
+    border-color: #ff3333 !important; /* Bardziej nasycona czerwień */
+    background: rgba(255, 0, 0, 0.07) !important; /* Delikatne czerwone tło wewnątrz pola */
+    box-shadow: 0 0 10px rgba(255, 51, 51, 0.2);
 }
 
-/* --- RESPONSYWNOŚĆ --- */
+/* Napis pod polem */
+.error-msg {
+    color: #ff3333; /* Żywa czerwień */
+    font-size: 0.85rem;
+    font-weight: 800; /* Mocne pogrubienie */
+    margin-top: 5px;
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    animation: shakeError 0.4s ease-in-out; /* Delikatne potrząśnięcie przy pojawieniu się */
+}
+
+/* Dodanie ikony wykrzyknika przed tekstem błędu */
+.error-msg::before {
+    content: "!";
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    background: #ff3333;
+    color: #000;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+/* Animacja potrząsania, żeby użytkownik od razu zauważył błąd */
+@keyframes shakeError {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+/* Opcjonalnie: zmiana koloru znaku wodnego (placeholder) w błędnym polu */
+.error-border::placeholder {
+    color: rgba(255, 51, 51, 0.4);
+}
+
+/* Responsywność */
 @media (max-width: 768px) {
     .survey-form {
-        margin: 20px auto; /* Dodano 'auto', aby przywrócić centrowanie! */
+        margin: 20px auto;
         padding: 25px;
-        width: 92%; /* Zapobiega dotykaniu bocznych krawędzi ekranu */
-    }
-    .privacy-modal-content {
-        padding: 25px;
+        width: 92%;
     }
 }

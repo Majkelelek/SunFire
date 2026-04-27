@@ -2,36 +2,38 @@
 .about-container {
     min-height: calc(100vh - 80px);
     padding: 80px 5%;
-    max-width: 1400px;
+    max-width: 2000px;
     margin: 0 auto;
     color: #fff;
     position: relative;
     font-family: 'Inter', sans-serif;
     box-sizing: border-box;
+    overflow-x: visible;
 }
 
-/* --- TŁO I POŚWIATA --- */
+/* --- TŁO I POŚWIATA (DYNAMICZNA) --- */
 .about-glow {
     position: absolute;
     top: 5%;
-    right: 5%;
+    right: -10%;
     width: 600px;
     height: 600px;
-    background: radial-gradient(circle, rgba(255, 77, 0, 0.1) 0%, transparent 70%);
-    filter: blur(100px);
+    background: radial-gradient(circle, var(--sunfire-accent) 0%, transparent 70%);
+    filter: blur(120px);
     z-index: 0;
     pointer-events: none;
+    opacity: 0.2;
 }
 
 /* --- SEKCJA GŁÓWNA (HERO) --- */
 .about-hero {
     margin-bottom: 80px;
     position: relative;
-    z-index: 1;
+    z-index: 2;
 }
 
 .about-tag {
-    color: #ff4d00;
+    color: var(--sunfire-accent);
     font-weight: 800;
     letter-spacing: 6px;
     font-size: 0.85rem;
@@ -48,8 +50,8 @@
 }
 
 .about-hero h1 span {
-    color: #ff4d00;
-    text-shadow: 0 0 30px rgba(255, 77, 0, 0.4);
+    color: var(--sunfire-accent);
+    text-shadow: 0 0 30px color-mix(in srgb, var(--sunfire-accent), transparent 50%);
 }
 
 .about-lead {
@@ -61,359 +63,285 @@
     font-weight: 300;
 }
 
-/* --- PRZYCISK EDYCJI (OŁÓWEK) --- */
-.edit-dot {
-    background: #ff4d00;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 28px;
-    height: 28px;
-    cursor: pointer;
-    margin-left: 15px;
-    font-size: 14px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    box-shadow: 0 0 15px rgba(255, 77, 0, 0.3);
-}
-
-.edit-dot:hover {
-    transform: scale(1.2) rotate(15deg);
-    background: #fff;
-    color: #ff4d00;
-}
-
 /* --- SIATKA KART --- */
-.about-card {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 2rem;
-    border-radius: 12px;
-    position: relative;
-    /* transition itp. */
-}
 .about-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* Tworzy dwie równe kolumny */
+    grid-template-columns: repeat(2, 1fr);
     gap: 30px;
     width: 100%;
+    position: relative;
+    z-index: 2;
 }
+
+/* --- POJEDYNCZA KARTA --- */
+.about-card {
+    background: rgba(15, 15, 15, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 40px;
+    border-radius: 25px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: visible; /* Ważne, żeby przyciski/glow nie były ucięte */
+}
+
+.about-card:hover {
+    border-color: color-mix(in srgb, var(--sunfire-accent), transparent 60%);
+    transform: translateY(-5px);
+    background: rgba(20, 20, 20, 0.8);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.about-card.full-width {
+    grid-column: span 2;
+}
+
+/* --- POPRAWIONY NAGŁÓWEK KARTY (ADMIN) --- */
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid color-mix(in srgb, var(--sunfire-accent), transparent 80%);
+}
+
+.card-header h3 {
+    margin: 0;
+    color: var(--sunfire-accent);
+    font-size: 0.9rem;
+    font-weight: 900;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+}
+
+/* --- PRZYCISKI AKCJI ADMINA --- */
+.card-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.card-actions button {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.3s;
+}
+
+.card-actions button:hover {
+    background: var(--sunfire-accent);
+    border-color: var(--sunfire-accent);
+    transform: scale(1.1);
+}
+
+.card-actions .del-btn {
+    color: #ff4444;
+}
+
+.card-actions .del-btn:hover {
+    background: #ff4444 !important;
+    color: #fff !important;
+    border-color: #ff4444 !important;
+}
+
+/* --- TREŚĆ KARTY --- */
+.bio-text {
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.7;
+    font-size: 1rem;
+    margin: 0;
+}
+
+/* --- PRZYCISK DODAWANIA SEKCJI --- */
+.add-section-btn {
+    grid-column: span 2;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 2px dashed rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.4);
+    border-radius: 15px;
+    cursor: pointer;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    transition: 0.3s;
+    margin-top: 20px;
+}
+
+.add-section-btn:hover {
+    border-color: var(--sunfire-accent);
+    color: var(--sunfire-accent);
+    background: color-mix(in srgb, var(--sunfire-accent), transparent 96%);
+}
+
+/* --- MODALE --- */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: #0f0f0f;
+    border: 1px solid var(--sunfire-accent);
+    padding: 40px;
+    border-radius: 25px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 0 50px color-mix(in srgb, var(--sunfire-accent), transparent 80%);
+}
+
+.modal-content h2 {
+    color: var(--sunfire-accent);
+    text-transform: uppercase;
+    margin-bottom: 25px;
+}
+
+/* --- FORMULARZE W MODALU --- */
+.modal-content input, .modal-content textarea {
+    width: 100%;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    padding: 12px;
+    border-radius: 8px;
+    color: #fff;
+    margin-bottom: 15px;
+}
+
+.modal-content input:focus {
+    border-color: var(--sunfire-accent);
+    outline: none;
+}
+
 .size-btns {
     display: flex;
     gap: 10px;
     margin-bottom: 20px;
 }
 
-size-btns button {
+.size-btns button {
     flex: 1;
-    padding: 12px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: white;
-    cursor: pointer;
-    border-radius: 8px;
-    font-weight: bold;
-    transition: all 0.3s ease;
-}
-
-/* Stan aktywny (wybrany) */
-.size-btns button.active {
-    background: #ff4d00; /* Twój kolor akcentu */
-    border-color: #ff4d00;
-    box-shadow: 0 0 15px rgba(255, 77, 0, 0.4);
-}
-
-.size-btns button:hover:not(.active) {
-    background: rgba(255, 255, 255, 0.1);
-}
-
-
-.about-card {
-    background: rgba(15, 15, 15, 0.7);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    padding: 45px;
-    border-radius: 25px;
-    transition: 0.3s ease;
-}
-.about-card.full-width {
-    grid-column: span 2;
-}
-
-.about-card:hover {
-    border-color: rgba(255, 77, 0, 0.3);
-    background: rgba(20, 20, 20, 0.8);
-}
-
-.about-card h3 {
-    color: #ff4d00;
-    font-size: 0.85rem;
-    font-weight: 900;
-    letter-spacing: 4px;
-    margin-bottom: 30px;
-    text-transform: uppercase;
-    border-bottom: 1px solid rgba(255, 77, 0, 0.2);
-    padding-bottom: 15px;
-}
-
-/* --- BIOGRAFIA --- */
-.bio-item { margin-bottom: 25px; }
-
-.year {
-    font-weight: 900;
-    font-size: 0.8rem;
-    color: #ff4d00;
-    display: block;
-}
-
-.bio-text {
-    white-space: pre-wrap;
-    line-height: 1.8;
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 1.1rem;
-}
-
-/* --- SKILLE --- */
-.skill-bar { margin-bottom: 25px; }
-
-.skill-info {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 8px;
-    font-size: 0.9rem;
-    font-weight: 700;
-}
-
-.bar-bg {
-    height: 6px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 3px;
-    overflow: hidden;
-}
-
-.bar-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #ff4d00, #ff8c00);
-    box-shadow: 0 0 15px rgba(255, 77, 0, 0.4);
-    border-radius: 3px;
-}
-
-
-
-/* --- MODAL (Logika edycji) --- */
-.modal-overlay {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100vw; height: 100vh;
-    background: rgba(0, 0, 0, 0.85);
-    backdrop-filter: blur(10px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2000;
-}
-
-.modal-content {
-    background: #111;
-    border: 1px solid #ff4d00;
-    padding: 40px;
-    border-radius: 20px;
-    width: 90%;
-    max-width: 600px;
-    box-shadow: 0 0 50px rgba(255, 77, 0, 0.2);
-}
-
-.modal-content h2 {
-    color: #ff4d00;
-    margin-bottom: 20px;
-    font-size: 1.2rem;
-    letter-spacing: 2px;
-}
-
-.modal-form textarea {
-    width: 100%;
-    min-height: 180px;
-    background: #0a0a0a;
+    padding: 10px;
+    background: #1a1a1a;
     border: 1px solid #333;
-    color: white;
-    padding: 20px;
-    border-radius: 12px;
-    font-family: inherit;
-    font-size: 1rem;
-    line-height: 1.6;
-    margin-bottom: 25px;
-    resize: vertical;
-}
-
-.modal-form textarea:focus {
-    border-color: #ff4d00;
-    outline: none;
-}
-
-.modal-btns {
-    display: flex;
-    gap: 15px;
-}
-
-.modal-btns button {
-    flex: 1;
-    padding: 15px;
-    border-radius: 10px;
-    font-weight: 800;
+    color: #666;
+    border-radius: 8px;
     cursor: pointer;
-    transition: 0.3s;
+    font-weight: bold;
+}
+
+.size-btns button.active {
+    background: var(--sunfire-accent);
+    color: #fff;
+    border-color: var(--sunfire-accent);
+}
+
+.save-btn {
+    width: 100%;
+    padding: 15px;
+    background: var(--sunfire-accent);
     border: none;
+    color: #fff;
+    font-weight: 900;
+    border-radius: 10px;
+    cursor: pointer;
+    text-transform: uppercase;
 }
 
-.modal-btns button:first-child {
-    background: #ff4d00;
-    color: white;
-}
-
-.modal-btns button:first-child:hover {
-    background: #fff;
-    color: #ff4d00;
-}
-
-.btn-cancel {
-    background: rgba(255, 255, 255, 0.05) !important;
-    color: white !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-}
-
-.btn-cancel:hover {
-    background: rgba(255, 255, 255, 0.1) !important;
-}
-
-/* Responsywność */
-@media (max-width: 800px) {
-    .about-hero h1 { font-size: 2.8rem; }
-    .about-grid { grid-template-columns: 1fr; }
-}
-
-.editable-wrapper {
+/* Styl dla ołówka przy opisie (lead) */
+.editable-group {
     position: relative;
-    padding-right: 40px; /* Miejsce na ołówek */
+    width: fit-content;
 }
 
-.edit-btn {
+.edit-dot {
     position: absolute;
     top: 0;
-    right: 0;
-    background: #ff4d00;
-    color: white;
+    right: -40px; /* Wysunięcie ołówka obok tekstu */
+    background: var(--sunfire-accent);
     border: none;
-    width: 30px;
-    height: 30px;
+    color: #000;
+    width: 25px;
+    height: 25px;
     border-radius: 50%;
     cursor: pointer;
     font-size: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
+    opacity: 0.5;
     transition: 0.3s;
-    box-shadow: 0 0 10px rgba(255, 77, 0, 0.5);
 }
 
-.edit-btn:hover {
-    background: white;
-    color: #ff4d00;
-    transform: scale(1.1);
+.editable-group:hover .edit-dot {
+    opacity: 1;
 }
 
-.admin-textarea {
-    width: 100%;
-    min-height: 200px;
-    background: #0a0a0a;
-    border: 1px solid #333;
-    color: white;
-    padding: 15px;
-    border-radius: 10px;
-    font-family: inherit;
-    font-size: 1rem;
-    margin-bottom: 20px;
-}
-.card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 20px;
-}
-
-.card-actions button {
-    background: none;
-    border: none;
-    color: #ff4d00;
-    cursor: pointer;
-    font-size: 1.2rem;
-    margin-left: 10px;
-}
-
-.del-btn { color: #ff0000 !important; }
-
-.add-section-card {
-    background: rgba(255, 77, 0, 0.05);
-    border: 2px dashed rgba(255, 77, 0, 0.3);
-    border-radius: 25px;
-    color: #ff4d00;
-    font-weight: 900;
-    cursor: pointer;
-    transition: 0.3s;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 200px;
-}
-
-.add-section-card:hover {
-    background: rgba(255, 77, 0, 0.1);
-    border-color: #ff4d00;
-    transform: scale(1.02);
-}
-
-.admin-input {
-    width: 100%;
-    background: #000;
-    border: 1px solid #333;
-    padding: 15px;
-    color: #fff;
-    margin-bottom: 15px;
-    border-radius: 8px;
-    font-size: 1.1rem;
-    font-weight: bold;
-}
-
+/* Styl dla przycisku nagłówka */
 .admin-edit-btn {
-    background: #ff4d00; /* Twój pomarańczowy akcent */
-    color: white;
-    border: none;
-    padding: 6px 12px;
+    margin-top: 15px;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    color: #fff;
+    padding: 5px 12px;
     border-radius: 4px;
-    font-size: 0.7rem;
-    font-weight: bold;
+    font-size: 11px;
+    font-weight: 800;
     cursor: pointer;
-    transition: all 0.3s ease;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    opacity: 0.7;
 }
 
 .admin-edit-btn:hover {
-    opacity: 1;
-    transform: scale(1.05);
-    box-shadow: 0 0 10px rgba(255, 77, 0, 0.3);
+    background: var(--sunfire-accent);
+    color: #000;
 }
 
-@media (max-width: 768px) {
-    .about-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .about-card.full-width {
-        grid-column: span 1;
-    }
+/* Przycisk dodawania sekcji na dole siatki */
+.add-section-card {
+    grid-column: span 1;
+    background: rgba(255,255,255,0.02);
+    border: 2px dashed rgba(255,255,255,0.1);
+    border-radius: 25px;
+    min-height: 200px;
+    cursor: pointer;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.add-section-card span {
+    color: rgba(255,255,255,0.3);
+    font-weight: 900;
+    letter-spacing: 2px;
+}
+
+.add-section-card:hover {
+    border-color: var(--sunfire-accent);
+    background: color-mix(in srgb, var(--sunfire-accent), transparent 96%);
+}
+
+.add-section-card:hover span {
+    color: var(--sunfire-accent);
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 900px) {
+    .about-grid { grid-template-columns: 1fr; }
+    .about-card.full-width { grid-column: span 1; }
+    .add-section-btn { grid-column: span 1; }
+    .about-hero h1 { font-size: 3rem; }
+    .about-card { padding: 30px; }
 }

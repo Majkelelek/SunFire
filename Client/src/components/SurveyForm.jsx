@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import './SurveyForm.css';
 
 const SurveyForm = () => {
@@ -13,6 +12,36 @@ const SurveyForm = () => {
     const apiUrl = import.meta.env.VITE_API_URL;
     
     const validateEmail = (email) => /\S+@\S+\.\S+/.test(email);
+
+    // UNIWERSALNA FUNKCJA OBSŁUGI ZMIAN - Czyści błędy na żywo
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        
+        // Aktualizacja danych
+        setFormData(prev => ({ ...prev, [name]: value }));
+
+        // Jeśli dla tego pola istnieje błąd, usuń go ze stanu
+        if (errors[name]) {
+            setErrors(prev => ({
+                ...prev,
+                [name]: ''
+            }));
+        }
+    };
+
+    // OBSŁUGA ZMIANY CHECKBOXA
+    const handleConsentChange = (e) => {
+        const checked = e.target.checked;
+        setConsent(checked);
+
+        // Jeśli zgoda została zaznaczona, usuń błąd zgody
+        if (checked && errors.consent) {
+            setErrors(prev => ({
+                ...prev,
+                consent: ''
+            }));
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -35,7 +64,6 @@ const SurveyForm = () => {
 
         setErrors(tempErrors);
 
-        // Jeśli są błędy, zatrzymaj wysyłanie
         if (Object.keys(tempErrors).length > 0) return;
 
         setStatus('Wysyłanie...');
@@ -62,7 +90,6 @@ const SurveyForm = () => {
         }
     };
 
-    // --- WIDOK PO UPROSZCZONYM WYSŁANIU (Success Card) ---
     if (isSent) {
         return (
             <div className="success-card">
@@ -85,50 +112,51 @@ const SurveyForm = () => {
                 
                 <div className="input-group">
                     <input 
+                        name="name"
                         className={errors.name ? 'error-border' : ''} 
                         type="text" 
                         maxLength="50"  
                         placeholder="Twoje Imię" 
                         value={formData.name} 
-                        onChange={(e) => setFormData({...formData, name: e.target.value})} 
+                        onChange={handleChange} 
                     />
                     {errors.name && <span className="error-msg">{errors.name}</span>}
                 </div>
 
                 <div className="input-group">
                     <input 
+                        name="email"
                         className={errors.email ? 'error-border' : ''} 
                         type="email" 
-                        //maskymalna długość 254 znaków zgodnie ze standardem RFC 5321  
                         maxLength="254"
                         placeholder="Twój E-mail" 
                         value={formData.email} 
-                        onChange={(e) => setFormData({...formData, email: e.target.value})} 
+                        onChange={handleChange} 
                     />
                     {errors.email && <span className="error-msg">{errors.email}</span>}
                 </div>
 
                 <div className="input-group">
                     <input 
+                        name="subject"
                         className={errors.subject ? 'error-border' : ''} 
                         type="text" 
-                        //maskymalna długość
                         maxLength="100"
                         placeholder="Temat" 
                         value={formData.subject} 
-                        onChange={(e) => setFormData({...formData, subject: e.target.value})} 
+                        onChange={handleChange} 
                     />
                     {errors.subject && <span className="error-msg">{errors.subject}</span>}
                 </div>
 
                 <div className="input-group">
                     <textarea 
+                        name="message"
                         className={errors.message ? 'error-border' : ''} 
                         placeholder="Twoja wiadomość..." 
-                        //maskymalna długość
                         maxLength="2000"
                         value={formData.message} 
-                        onChange={(e) => setFormData({...formData, message: e.target.value})} 
+                        onChange={handleChange} 
                     />
                     {errors.message && <span className="error-msg">{errors.message}</span>}
                 </div>
@@ -138,11 +166,11 @@ const SurveyForm = () => {
                         <input 
                             type="checkbox" 
                             checked={consent} 
-                            onChange={(e) => setConsent(e.target.checked)} 
+                            onChange={handleConsentChange} 
                         />
                         <span>
                             Wyrażam zgodę na przetwarzanie danych w celu odpowiedzi na moją wiadomość. 
-                            Zapoznaj się z moją <span onClick={() => setShowPrivacy(true)} className="privacy-link">polityką prywatności</span>.
+                            Zapoznaj się z moją <span onClick={(e) => { e.preventDefault(); setShowPrivacy(true); }} className="privacy-link">polityką prywatności</span>.
                         </span>
                     </label>
                     {errors.consent && <span className="error-msg">{errors.consent}</span>}
@@ -153,7 +181,6 @@ const SurveyForm = () => {
                 {status && <p className="form-status">{status}</p>}
             </form>
 
-            {/* --- MODAL POLITYKI PRYWATNOŚCI (Poza formem dla czystego układu) --- */}
             {showPrivacy && (
                 <div className="privacy-modal-overlay" onClick={() => setShowPrivacy(false)}>
                     <div className="privacy-modal-content" onClick={(e) => e.stopPropagation()}>

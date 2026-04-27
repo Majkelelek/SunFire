@@ -50,8 +50,13 @@ namespace Server.Controllers
             }
             else
             {
-                newData.Id = existing.Id;
-                await _config.ReplaceOneAsync(c => c.Id == existing.Id, newData);
+                // KLUCZOWA ZMIANA: Aktualizujemy tylko pola odpowiedzialne za kolory.
+                // Dzięki temu nie kasujemy linków do Cloudinary, które są już w bazie!
+                var updateDefinition = Builders<SiteConfig>.Update
+                    .Set(c => c.PrimaryColor, newData.PrimaryColor)
+                    .Set(c => c.BackgroundColor, newData.BackgroundColor);
+
+                await _config.UpdateOneAsync(c => c.Id == existing.Id, updateDefinition);
             }
 
             return Ok(new { message = "Zapisano kolory w MongoDB!" });

@@ -1,129 +1,82 @@
-/* Import nowoczesnej czcionki */
+/* Login.css */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;500;800&display=swap');
 
 .login-page {
-    min-height: calc(100vh - 80px); /* Zakładając, że Twój Navbar ma ok. 80px */
+    min-height: calc(100vh - 80px);
     width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
     background-color: #050505;
+    /* Delikatne poświaty w tle reagujące na Twój kolor z admina */
     background-image: 
-        radial-gradient(circle at 20% 30%, rgba(255, 77, 0, 0.05) 0%, transparent 50%),
-        radial-gradient(circle at 80% 70%, rgba(255, 77, 0, 0.05) 0%, transparent 50%);
+        radial-gradient(circle at 20% 30%, color-mix(in srgb, var(--sunfire-accent), transparent 95%) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, color-mix(in srgb, var(--sunfire-accent), transparent 95%) 0%, transparent 50%);
     overflow: hidden;
     position: relative;
     font-family: 'Inter', sans-serif;
-    margin: 0;
-}
-
-/* Duża, miękka poświata podążająca za centrum */
-.login-background-glow {
-    position: absolute;
-    width: 800px;
-    height: 800px;
-    background: radial-gradient(circle, rgba(255, 77, 0, 0.08) 0%, rgba(0,0,0,0) 70%);
-    filter: blur(80px);
-    pointer-events: none;
-    z-index: 0;
 }
 
 .login-card {
-    background: rgba(15, 15, 15, 0.8);
+    /* Gradient tła: od ciemnego fioletu (akcentu) do ciemnego pomarańczu */
+    background: linear-gradient(
+        160deg, 
+        color-mix(in srgb, var(--sunfire-accent), black 92%) 0%, 
+        rgba(10, 10, 10, 0.95) 50%,
+        color-mix(in srgb, #ff8c00, black 92%) 100%
+    ) !important;
+    
     backdrop-filter: blur(25px);
     -webkit-backdrop-filter: blur(25px);
-    padding: 60px 100px; /* Szeroki padding wewnętrzny */
+    padding: 60px 100px;
     border-radius: 30px;
-    border: 1px solid rgba(255, 77, 0, 0.3);
+    
+    /* Obramowanie: gradientowe przejście między kolorami */
+    border: 1px solid;
+    border-image: linear-gradient(
+        160deg, 
+        color-mix(in srgb, var(--sunfire-accent), transparent 60%), 
+        color-mix(in srgb, #ff8c00, transparent 60%)
+    ) 1;
+    /* Uwaga: border-image czasem gryzie się z border-radius, 
+       jeśli tak będzie, użyj poniższego border: */
+    border: 1px solid color-mix(in srgb, var(--sunfire-accent), transparent 80%);
+    
     width: 90%;
-    max-width: 750px; /* Solidna szerokość panelu */
+    max-width: 750px;
+    
+    /* Cień: poświata z obu stron (fioletowa i pomarańczowa) */
     box-shadow: 
-        0 40px 100px rgba(0,0,0,0.8),
-        0 0 40px rgba(255, 77, 0, 0.1);
+        0 40px 100px rgba(0, 0, 0, 0.8),
+        -15px -15px 50px color-mix(in srgb, var(--sunfire-accent), transparent 80%),
+        15px 15px 50px color-mix(in srgb, #ff8c00, transparent 80%);
+        
     z-index: 1;
     display: flex;
     flex-direction: column;
-    box-sizing: border-box;
     animation: fadeInScale 0.6s ease-out;
-}
-
-.login-header {
-    text-align: center;
-    margin-bottom: 50px;
+    overflow: visible; 
 }
 
 .login-header h1 {
-    font-size: 4rem; /* Potężny napis Sunfire */
+    font-size: 4rem;
     letter-spacing: 15px;
     margin: 0;
     color: #fff;
     font-weight: 900;
     text-transform: uppercase;
-    text-shadow: 0 0 30px rgba(255, 77, 0, 0.5);
+    text-shadow: 0 0 35px color-mix(in srgb, var(--sunfire-accent), transparent 40%);
 }
 
 .login-header h1 span {
-    color: #ff4d00;
-    position: relative;
+    color: var(--sunfire-accent);
 }
 
-.login-header p {
-    color: rgba(255, 255, 255, 0.4);
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 5px;
-    margin-top: 10px;
-}
-
-.login-error-badge {
-    background: rgba(231, 76, 60, 0.15);
-    color: #ff4d4d;
-    padding: 15px;
-    border-radius: 10px;
-    font-size: 0.95rem;
-    text-align: center;
-    margin-bottom: 30px;
-    border: 1px solid rgba(231, 76, 60, 0.3);
-    animation: shake 0.4s ease-in-out;
-}
-
-.login-input-group {
-    margin-bottom: 30px;
-    display: flex;
-    flex-direction: column;
-}
-
-.login-input-group label {
-    color: #ff4d00;
-    font-size: 0.8rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    margin-bottom: 12px;
-    letter-spacing: 2px;
-}
-
-.login-input-group input {
-    width: 100%;
-    padding: 20px 25px; /* Duże, wygodne pole tekstowe */
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 15px;
-    color: #fff;
-    font-size: 1.1rem;
-    box-sizing: border-box;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.login-input-group input:focus {
-    outline: none;
-    border-color: #ff4d00;
-    background: rgba(255, 77, 0, 0.05);
-    box-shadow: 0 0 20px rgba(255, 77, 0, 0.2);
-    transform: scale(1.01);
-}
-
+/* --- TEN ŁADNY KOLOROWY PRZYCISK --- */
 .login-submit-btn {
-    background: linear-gradient(90deg, #ff4d00, #ff8c00);
+    position: relative;
+    /* Gradient od Twojego koloru do ognistego pomarańczu */
+    background: linear-gradient(90deg, var(--sunfire-accent, #6a11cb), #ff8c00);
     color: #fff;
     border: none;
     padding: 22px;
@@ -135,30 +88,38 @@
     transition: all 0.3s ease;
     margin-top: 20px;
     text-transform: uppercase;
-    box-shadow: 0 10px 30px rgba(255, 77, 0, 0.3);
+    z-index: 1;
+}
+
+/* POŚWIATA PRZYCISKU (Nieucięta) */
+.login-submit-btn::after {
+    content: "";
+    position: absolute;
+    top: 10px; left: 10px; right: 10px;
+    bottom: -15px; /* Wysunięcie w dół */
+    background: linear-gradient(90deg, var(--sunfire-accent, #6a11cb), #ff8c00);
+    filter: blur(25px);
+    opacity: 0.6;
+    z-index: -1;
+    border-radius: 15px;
+    transition: all 0.3s ease;
 }
 
 .login-submit-btn:hover:not(:disabled) {
-    transform: translateY(-3px);
-    box-shadow: 0 15px 40px rgba(255, 77, 0, 0.5);
-    filter: brightness(1.2);
+    transform: translateY(-4px);
 }
 
-.login-submit-btn:active {
-    transform: translateY(0);
+.login-submit-btn:hover::after {
+    opacity: 0.8;
+    filter: blur(35px);
+    bottom: -25px;
 }
 
-.login-submit-btn:disabled {
-    background: #222;
-    color: #555;
-    cursor: not-allowed;
-    box-shadow: none;
-}
-
+/* --- LINK POWROTU --- */
 .login-back-link {
     text-align: center;
     margin-top: 40px;
-    color: rgba(255, 255, 255, 0.3);
+    color: rgba(255, 255, 255, 0.4);
     text-decoration: none;
     font-size: 0.9rem;
     transition: 0.3s;
@@ -166,50 +127,31 @@
 }
 
 .login-back-link:hover {
-    color: #ff4d00;
+    color: var(--sunfire-accent);
+    text-shadow: 0 0 10px var(--sunfire-accent);
 }
 
-/* --- ANIMACJE --- */
+/* Formularz logowania (inputy) */
+.login-input-group label {
+    color: var(--sunfire-accent);
+    font-size: 0.8rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+}
+
+.login-input-group input:focus {
+    outline: none;
+    border-color: var(--sunfire-accent);
+    box-shadow: 0 0 20px color-mix(in srgb, var(--sunfire-accent), transparent 85%);
+}
 
 @keyframes fadeInScale {
-    from {
-        opacity: 0;
-        transform: scale(0.95) translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-    }
+    from { opacity: 0; transform: scale(0.95) translateY(20px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
-@keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-10px); }
-    75% { transform: translateX(10px); }
-}
-
-/* Spinner dla stanu ładowania */
-.loader {
-    width: 24px;
-    height: 24px;
-    border: 4px solid rgba(255,255,255,0.2);
-    border-radius: 50%;
-    border-top-color: #fff;
-    display: inline-block;
-    animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-/* Responsywność */
 @media (max-width: 800px) {
-    .login-card {
-        padding: 50px 40px;
-        max-width: 90%;
-    }
-    .login-header h1 {
-        font-size: 2.8rem;
-    }
+    .login-card { padding: 40px 30px; }
+    .login-header h1 { font-size: 2.5rem; letter-spacing: 8px; }
 }

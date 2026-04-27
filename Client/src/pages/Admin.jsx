@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { HexColorPicker } from "react-colorful"; // Biblioteka do przesuwania kolorów
 import './Admin.css';
 
 export default function Admin() {
@@ -10,16 +11,29 @@ export default function Admin() {
   const [bgFile, setBgFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const apiUrl = import.meta.env.VITE_API_URL;
+
   // Pobierz aktualne kolory przy wejściu do panelu
   useEffect(() => {
     fetch(`${apiUrl}/api/cms`, { credentials: 'include' })
       .then(res => res.ok ? res.json() : null)
       .then(data => { if (data) setConfig(data); });
-  }, []);
+  }, [apiUrl]);
 
-  // Zapisz kolory (Tło i Akcent)
+  // Funkcja obsługująca przesuwanie koloru i podgląd na żywo
+  const handleColorChange = (field, value) => {
+    setConfig(prev => ({ ...prev, [field]: value }));
+    
+    // Zastosowanie zmian natychmiastowo na stronie
+    if (field === 'primaryColor') {
+      document.documentElement.style.setProperty('--sunfire-accent', value);
+    } else if (field === 'backgroundColor') {
+      document.body.style.backgroundColor = value;
+      document.body.style.backgroundImage = 'none'; // Ukrywamy zdjęcie, żeby widzieć kolor
+    }
+  };
+
+  // Zapisz kolory do bazy MongoDB
   const handleSaveConfig = async () => {
-    console.log("Wysyłam do bazy:", config);
     setLoading(true);
     const res = await fetch(`${apiUrl}/api/cms`, {
       method: 'POST',
@@ -30,13 +44,6 @@ export default function Admin() {
 
     if (res.ok) {
       alert("Zmiany zapisane w MongoDB!");
-      
-      // 1. To zmienia tło (już masz)
-      document.body.style.backgroundColor = config.backgroundColor;
-      
-      // 2. DODAJ TO: To zmienia kolor akcentu w CSS na żywo
-      document.documentElement.style.setProperty('--sunfire-accent', config.primaryColor);
-      
     } else {
       alert("Błąd 401: Twoja sesja wygasła. Zaloguj się ponownie.");
       navigate('/login');
@@ -44,7 +51,7 @@ export default function Admin() {
     setLoading(false);
   };
 
-  // Rejestracja nowego admina
+  // Rejestracja nowego administratora
   const handleAddAdmin = async (e) => {
     e.preventDefault();
     const res = await fetch(`${apiUrl}/api/auth/register`, {
@@ -62,6 +69,7 @@ export default function Admin() {
     }
   };
 
+  // Przesyłanie zdjęcia tła do Cloudinary
   const handleUploadBg = async () => {
     if (!bgFile) return alert("Wybierz plik!");
     
@@ -78,7 +86,6 @@ export default function Admin() {
     if (res.ok) {
         const data = await res.json();
         alert("Zdjęcie tła zaktualizowane!");
-        // Zastosuj tło natychmiast
         document.body.style.backgroundImage = `url(${data.imageUrl})`;
         document.body.style.backgroundSize = "cover";
         document.body.style.backgroundAttachment = "fixed";
@@ -86,28 +93,25 @@ export default function Admin() {
         alert("Błąd przesyłania zdjęcia.");
     }
     setUploading(false);
-    };
+  };
     
-    const handleRemoveBg = async () => {
-        if (!window.confirm("Czy na pewno chcesz usunąć zdjęcie z tła?")) return;
+  // Usuwanie zdjęcia tła
+  const handleRemoveBg = async () => {
+    if (!window.confirm("Czy na pewno chcesz usunąć zdjęcie z tła?")) return;
 
-        const res = await fetch(`${apiUrl}/api/cms/remove-bg`, {
-            method: 'DELETE',
-            credentials: 'include'
-        });
+    const res = await fetch(`${apiUrl}/api/cms/remove-bg`, {
+        method: 'DELETE',
+        credentials: 'include'
+    });
 
-        if (res.ok) {
-            alert("Zdjęcie usunięte!");
-            // Usuwamy tło z podglądu na żywo
-            document.body.style.backgroundImage = "none";
-            // Opcjonalnie przywracamy kolor tła z configu
-            document.body.style.backgroundColor = config.backgroundColor;
-        } else {
-            alert("Błąd podczas usuwania tła.");
-        }
-        };
-
-
+    if (res.ok) {
+        alert("Zdjęcie usunięte!");
+        document.body.style.backgroundImage = "none";
+        document.body.style.backgroundColor = config.backgroundColor;
+    } else {
+        alert("Błąd podczas usuwania tła.");
+    }
+  };
 
   return (
     <div className="admin-wrapper">
@@ -115,37 +119,56 @@ export default function Admin() {
 
       <div className="admin-section">
         <h3>Kolory Strony</h3>
-        <div className="color-inputs">
+        <div className="color-inputs" style={{ display: 'flex', gap: '40px', flexWrap: 'wrap', marginBottom: '20px' }}>
+          
           <div className="color-field">
-            <label>Główny Akcent</label>
-            <input type="color" value={config.primaryColor} 
-                   onChange={e => setConfig({...config, primaryColor: e.target.value})} />
+            <label style={{ display: 'block', marginBottom: '10px', fontWeight: 'bold' }}>
+              Akcent: <span style={{ color: config.primaryColor }}>{config.primaryColor}</span>
+            </label>
+            <HexColorPicker 
+              color={config.primaryColor} 
+              onChange={(newColor) => handleColorChange('primaryColor', newColor)} 
+            />
           </div>
+          
           <div className="color-field">
-            <label>Kolor Tła</label>
-            <input type="color" value={config.backgroundColor} 
-                   onChange={e => setConfig({...config, backgroundColor: e.target.value})} />
+            <label style={{ display: 'block', marginBottom: '10px', fontWeight: 'bold' }}>
+              Tło: <span style={{ color: config.primaryColor }}>{config.backgroundColor}</span>
+            </label>
+            <HexColorPicker 
+              color={config.backgroundColor} 
+              onChange={(newColor) => handleColorChange('backgroundColor', newColor)} 
+            />
+          </div>
+          <button onClick={handleSaveConfig} className="sunfire-btn" style={{ marginTop: '20px', width: '100%' }} disabled={loading}>
+          {loading ? 'Zapisywanie...' : 'ZAPISZ ZMIANY W BAZIE'}
+        </button>
+          
+        </div>
+
+        <div className="upload-group" style={{ marginTop: '30px' }}>
+          <input type="file" onChange={e => setBgFile(e.target.files[0])} accept="image/*" className="admin-input" />
+          <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+            <button onClick={handleUploadBg} className="sunfire-btn" disabled={uploading}>
+              {uploading ? "Przesyłanie..." : "USTAW ZDJĘCIE W TLE"}
+            </button>
+            <button onClick={handleRemoveBg} className="delete-btn">USUŃ ZDJĘCIE</button>
           </div>
         </div>
-        <div className="upload-group">
-    <input type="file" onChange={e => setBgFile(e.target.files[0])} accept="image/*" className="admin-input" />
-    <button onClick={handleUploadBg} className="sunfire-btn" disabled={uploading}>
-      {uploading ? "Przesyłanie..." : "USTAW ZDJĘCIE W TLE"}
-    </button>
-    <button onClick={handleRemoveBg} className="delete-btn">USUŃ ZDJĘCIE</button>
-  </div>
-        <button onClick={handleSaveConfig} className="sunfire-btn" disabled={loading}>
-          {loading ? 'Zapisywanie...' : 'ZAPISZ KOLORY'}
+
+        <button onClick={handleSaveConfig} className="sunfire-btn" style={{ marginTop: '20px', width: '100%' }} disabled={loading}>
+          {loading ? 'Zapisywanie...' : 'ZAPISZ ZMIANY W BAZIE'}
         </button>
       </div>
+
       <div className="admin-section">
-        <h3>Dodaj nowego Admina</h3>
+        <h3>Zarządzanie Administracją</h3>
         <form onSubmit={handleAddAdmin}>
-          <input className="admin-input" type="text" placeholder="Login" value={newUser.username}
+          <input className="admin-input" type="text" placeholder="Nowy login" value={newUser.username}
                  onChange={e => setNewUser({...newUser, username: e.target.value})} required />
           <input className="admin-input" type="password" placeholder="Hasło" value={newUser.password}
                  onChange={e => setNewUser({...newUser, password: e.target.value})} required />
-          <button type="submit" className="sunfire-btn">STWÓRZ KONTO</button>
+          <button type="submit" className="sunfire-btn">DODAJ ADMINISTRATORA</button>
         </form>
       </div>
     </div>

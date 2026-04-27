@@ -68,7 +68,7 @@ export default function Login({ setIsAdmin, checkAuth }) {
         {error && <div className="login-error-badge">{error}</div>}
         
         {attemptsInfo !== null && attemptsInfo > 0 && (
-          <p className="attempts-info" style={{ color: '#ff4d00', textAlign: 'center', fontSize: '0.85rem', marginBottom: '15px' }}>
+          <p className="attempts-info" style={{ color: 'var(--sunfire-accent, #ff4d00)', textAlign: 'center', fontSize: '0.85rem', marginBottom: '15px' }}>
             Pozostało prób: {attemptsInfo}
           </p>
         )}

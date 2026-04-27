@@ -5,6 +5,7 @@ export default function AboutPage({ isAdmin }) {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const apiUrl = import.meta.env.VITE_API_URL;
+    
     // Modal State
     const [editingItem, setEditingItem] = useState(null); 
     const [tempTitle, setTempTitle] = useState('');
@@ -19,7 +20,7 @@ export default function AboutPage({ isAdmin }) {
             const result = await res.json();
             setData(result);
         } catch (err) {
-            console.error("Błąd ładowania danych o mnie:");
+            console.error("Błąd ładowania danych o mnie:", err);
         }
         finally { setLoading(false); }
     };
@@ -36,12 +37,10 @@ export default function AboutPage({ isAdmin }) {
             updatedData.titleAccent = tempAccent;
         } else if (editingItem === 'lead') {
             updatedData.lead = tempContent;
-        } else if (editingItem === 'philosophy') {
-            updatedData.philosophy = tempContent;
         } else {
             updatedData.sections = data.sections.map(s => 
-            s.id === editingItem.id ? { ...s, title: tempTitle, content: tempContent, size: tempSize } : s
-        );
+                s.id === editingItem.id ? { ...s, title: tempTitle, content: tempContent, size: tempSize } : s
+            );
         }
 
         await sendUpdate(updatedData);
@@ -76,25 +75,34 @@ export default function AboutPage({ isAdmin }) {
     };
 
     if (loading) return <div className="loading">SYSTEM LOADING...</div>;
-    if (!data) return <div style={{ textAlign: 'center', marginTop: '150px', color: '#ff4d00' }}>(Błąd połączenia z serwerem).</div>;
+    if (!data) return <div className="error-screen">(Błąd połączenia z serwerem).</div>;
 
-    <div className="about-container"></div>
     return (
         <div className="about-container">
-            <div className="about-bg-noise"></div>
             <div className="about-glow"></div>
-
+            
             <section className="about-hero">
                 <div className="editable-group">
                     <p className="about-tag">{data.manifestoTag}</p>
-                    <h1 className="hero-h1">{data.title} <span>{data.titleAccent}</span>.</h1>
-                    {isAdmin && <button className="admin-edit-btn" onClick={() => { 
-                        setEditingItem('header'); setTempTitle(data.manifestoTag); setTempContent(data.title); setTempAccent(data.titleAccent);
-                    }}>✎ NAGŁÓWEK</button>}
+                    <h1 className="hero-h1">{data.title} <span>{data.titleAccent}</span></h1>
+                    {isAdmin && (
+                        <button className="admin-edit-btn" onClick={() => { 
+                            setEditingItem('header'); 
+                            setTempTitle(data.manifestoTag); 
+                            setTempContent(data.title); 
+                            setTempAccent(data.titleAccent);
+                        }}>✎ NAGŁÓWEK</button>
+                    )}
                 </div>
+                
                 <div className="editable-group">
                     <p className="about-lead">{data.lead || "Dodaj opis..."}</p>
-                    {isAdmin && <button className="edit-dot" onClick={() => { setEditingItem('lead'); setTempContent(data.lead); }}>✎</button>}
+                    {isAdmin && (
+                        <button className="edit-dot" onClick={() => { 
+                            setEditingItem('lead'); 
+                            setTempContent(data.lead); 
+                        }}>✎</button>
+                    )}
                 </div>
             </section>
 
@@ -105,8 +113,11 @@ export default function AboutPage({ isAdmin }) {
                             <h3>{section.title}</h3>
                             {isAdmin && (
                                 <div className="card-actions">
-                                    <button onClick={() => { 
-                                        setEditingItem(section); setTempTitle(section.title); setTempContent(section.content); setTempSize(section.size || 'half');
+                                    <button className="edit-btn" onClick={() => { 
+                                        setEditingItem(section); 
+                                        setTempTitle(section.title); 
+                                        setTempContent(section.content); 
+                                        setTempSize(section.size || 'half');
                                     }}>✎</button>
                                     <button className="del-btn" onClick={() => deleteSection(section.id)}>×</button>
                                 </div>
@@ -115,41 +126,53 @@ export default function AboutPage({ isAdmin }) {
                         <p className="bio-text">{section.content}</p>
                     </div>
                 ))}
-                {isAdmin && <button className="add-section-card" onClick={addNewSection}>+ DODAJ SEKCJĘ</button>}
+                
+                {isAdmin && (
+                    <button className="add-section-card" onClick={addNewSection}>
+                        <span>+ DODAJ SEKCJĘ</span>
+                    </button>
+                )}
             </div>
+
+            {/* MODAL EDYCJI */}
             {editingItem && (
                 <div className="modal-overlay" onClick={() => setEditingItem(null)}>
                     <div className="modal-content" onClick={e => e.stopPropagation()}>
                         <h2>KONFIGURACJA SEKCJI</h2>
+                        
                         {editingItem === 'header' ? (
-                            <>
-                                <label className="modal-label">TAG</label>
-                                <input className="admin-input" value={tempTitle} onChange={e => setTempTitle(e.target.value)} />
-                                <label className="modal-label">TYTUŁ</label>
-                                <input className="admin-input" value={tempContent} onChange={e => setTempContent(e.target.value)} />
-                                <label className="modal-label">AKCENT</label>
-                                <input className="admin-input" value={tempAccent} onChange={e => setTempAccent(e.target.value)} />
-                            </>
+                            <div className="modal-fields">
+                                <label>TAG (NAD NAGŁÓWKIEM)</label>
+                                <input value={tempTitle} onChange={e => setTempTitle(e.target.value)} />
+                                <label>TYTUŁ GŁÓWNY</label>
+                                <input value={tempContent} onChange={e => setTempContent(e.target.value)} />
+                                <label>AKCENT (KOLOROWY TEKST)</label>
+                                <input value={tempAccent} onChange={e => setTempAccent(e.target.value)} />
+                            </div>
+                        ) : editingItem === 'lead' ? (
+                            <div className="modal-fields">
+                                <label>OPIS POD NAGŁÓWKIEM</label>
+                                <textarea value={tempContent} onChange={e => setTempContent(e.target.value)} />
+                            </div>
                         ) : (
-                            <>
-                                {typeof editingItem === 'object' && (
-                                    <>
-                                        <label className="modal-label">TYTUŁ SEKCJI</label>
-                                        <input className="admin-input" value={tempTitle} onChange={e => setTempTitle(e.target.value)} />
-                                        <label className="modal-label">SZEROKOŚĆ</label>
-                                        <div className="size-btns">
-                                            <button className={tempSize === 'half' ? 'active' : ''} onClick={() => setTempSize('half')}>POŁOWA</button>
-                                            <button className={tempSize === 'full' ? 'active' : ''} onClick={() => setTempSize('full')}>CAŁOŚĆ</button>
-                                        </div>
-                                    </>
-                                )}
-                                <label className="modal-label">TREŚĆ</label>
-                                <textarea className="admin-textarea" value={tempContent} onChange={e => setTempContent(e.target.value)} />
-                            </>
+                            <div className="modal-fields">
+                                <label>TYTUŁ KARTY</label>
+                                <input value={tempTitle} onChange={e => setTempTitle(e.target.value)} />
+                                <label>SZEROKOŚĆ</label>
+                                <div className="size-btns">
+                                    <button className={tempSize === 'half' ? 'active' : ''} onClick={() => setTempSize('half')}>POŁOWA</button>
+                                    <button className={tempSize === 'full' ? 'active' : ''} onClick={() => setTempSize('full')}>CAŁOŚĆ</button>
+                                </div>
+                                <label>TREŚĆ KARTY</label>
+                                <textarea value={tempContent} onChange={e => setTempContent(e.target.value)} />
+                            </div>
                         )}
+
                         <div className="modal-btns">
-                            <button onClick={handleSave} disabled={isSaving}>{isSaving ? "..." : "ZAPISZ"}</button>
-                            <button onClick={() => setEditingItem(null)} className="btn-cancel">ANULUJ</button>
+                            <button className="btn-save" onClick={handleSave} disabled={isSaving}>
+                                {isSaving ? "ZAPISYWANIE..." : "ZAPISZ ZMIANY"}
+                            </button>
+                            <button className="btn-cancel" onClick={() => setEditingItem(null)}>ANULUJ</button>
                         </div>
                     </div>
                 </div>

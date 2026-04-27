@@ -22,15 +22,11 @@
 }
 
 .home-glow-main {
-    position: absolute;
-    top: 20%;
-    width: 80vw;
-    height: 60vh;
-    background: radial-gradient(circle, rgba(255, 77, 0, 0.07) 0%, transparent 70%);
+    /* Używamy var(--sunfire-accent) zamiast sztywnego koloru */
+    background: radial-gradient(circle, var(--sunfire-accent) 0%, transparent 70%);
+    opacity: 0.15; /* Możesz tu sterować mocą poświaty */
     filter: blur(120px);
-    z-index: 0;
 }
-
 /* --- HERO SECTION --- */
 .hero {
     position: relative;
@@ -44,7 +40,7 @@
 .hero-tagline {
     font-size: 0.9rem;
     letter-spacing: 10px;
-    color: #ff4d00;
+    color: var(--sunfire-accent, #ff4d00);
     font-weight: 800;
     margin-bottom: 20px;
     opacity: 0.8;
@@ -60,8 +56,9 @@
 }
 
 .hero-title span {
-    color: #ff4d00;
-    text-shadow: 0 0 40px rgba(255, 77, 0, 0.3);
+    color: var(--sunfire-accent);
+    /* Poświata tekstu również na zmiennej */
+    text-shadow: 0 0 40px color-mix(in srgb, var(--sunfire-accent), transparent 40%);
 }
 
 .hero-motto {
@@ -104,14 +101,14 @@
 }
 
 .btn-primary:hover {
-    background: #ff4d00;
+    background: var(--sunfire-accent, #ff4d00);
     transform: scale(1.05);
-    box-shadow: 0 10px 30px rgba(255, 77, 0, 0.4);
+    box-shadow: 0 10px 30px  color-mix(in srgb, var(--sunfire-accent), transparent 60%);
 }
 
 .btn-secondary:hover {
-    border-color: #ff4d00;
-    color: #ff4d00;
+    border-color: var(--sunfire-accent, #ff4d00);
+    color: var(--sunfire-accent, #ff4d00);
 }
 
 /* --- FOCUS SECTION --- */
@@ -131,7 +128,7 @@
 }
 
 .focus-num {
-    color: #ff4d00;
+    color: var(--sunfire-accent, #ff4d00);
     font-weight: 900;
     font-size: 0.8rem;
     display: block;

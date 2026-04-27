@@ -9,11 +9,10 @@ export default function Home() {
 
       <section className="hero">
         <div className="hero-content">
-          <p className="hero-tagline">WIZYTÓWKI - BANNERY - POCZTÓWKI</p>
+          <p className="hero-tagline">WIZYTÓWKI | BANNERY | POCZTÓWKI | FURRASY</p>
           <h1 className="hero-title">SUN<span>FIRE</span></h1>
           <p className="hero-motto">
-            Przekształcam idee w niezapomniane wrażenia wizualne. 
-            Design, który płonie pasją i precyzją.
+            Design, który płonie pasją i precyzją. XD
           </p>
           
           <div className="hero-btns">

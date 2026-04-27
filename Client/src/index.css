@@ -10,12 +10,14 @@
   --theme-bg: #121212; 
   --theme-accent: #ff8c00;
   --theme-bg-image: none;
+  --sunfire-accent: #ff4d00; /* Domyślny pomarańczowy */
 }
 
 /* Wymuszamy pełną wysokość dokumentu */
 html {
   min-height: 100vh;
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 /* Główne tło i czcionka */

@@ -1,3 +1,5 @@
+/* PortfolioPage.css */
+
 /* --- KONTENER GŁÓWNY --- */
 .portfolio-container {
     padding: 60px 5%;
@@ -12,7 +14,7 @@
 .portfolio-header {
     margin-bottom: 50px;
     text-align: left;
-    border-left: 4px solid #ff4d00;
+    border-left: 4px solid var(--sunfire-accent, #ff4d00);
     padding-left: 20px;
 }
 
@@ -26,23 +28,25 @@
 
 .admin-badge {
     display: inline-block;
-    background: rgba(255, 77, 0, 0.1);
-    color: #ff4d00;
+    /* Używamy color-mix, aby tło badge'a było przezroczystą wersją Twojego koloru */
+    background: color-mix(in srgb, var(--sunfire-accent), transparent 90%);
+    color: var(--sunfire-accent);
     padding: 5px 15px;
     border-radius: 20px;
     font-size: 0.8rem;
     font-weight: bold;
     text-transform: uppercase;
     letter-spacing: 2px;
-    border: 1px solid rgba(255, 77, 0, 0.3);
+    border: 1px solid color-mix(in srgb, var(--sunfire-accent), transparent 70%);
     margin-top: 10px;
     animation: pulseGlow 2s infinite;
 }
 
+/* Dynamiczna animacja poświaty */
 @keyframes pulseGlow {
-    0% { box-shadow: 0 0 5px rgba(255, 77, 0, 0.2); }
-    50% { box-shadow: 0 0 20px rgba(255, 77, 0, 0.5); }
-    100% { box-shadow: 0 0 5px rgba(255, 77, 0, 0.2); }
+    0% { box-shadow: 0 0 5px color-mix(in srgb, var(--sunfire-accent), transparent 80%); }
+    50% { box-shadow: 0 0 20px color-mix(in srgb, var(--sunfire-accent), transparent 50%); }
+    100% { box-shadow: 0 0 5px color-mix(in srgb, var(--sunfire-accent), transparent 80%); }
 }
 
 /* --- SIATKA (GRID) --- */
@@ -66,11 +70,11 @@
 
 .slot:hover {
     transform: translateY(-10px) scale(1.02);
-    border-color: rgba(255, 77, 0, 0.4);
+    border-color: color-mix(in srgb, var(--sunfire-accent), transparent 60%);
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
 }
 
-/* Projekt wypełniony (Obraz/Tekst) */
+/* Projekt wypełniony */
 .project-content {
     width: 100%;
     height: 100%;
@@ -100,7 +104,7 @@
     text-align: center;
     font-size: 1.1rem;
     line-height: 1.6;
-    background: linear-gradient(135deg, rgba(20, 20, 20, 0.9), rgba(40, 40, 40, 0.9));
+    background: linear-gradient(135deg, rgba(20, 20, 20, 0.95), rgba(40, 40, 40, 0.95));
     color: rgba(255, 255, 255, 0.8);
     box-sizing: border-box;
 }
@@ -112,7 +116,7 @@
     right: 15px;
     width: 35px;
     height: 35px;
-    background: #ff4d00;
+    background: var(--sunfire-accent);
     color: white;
     border: none;
     border-radius: 50%;
@@ -124,7 +128,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 0 15px rgba(255, 77, 0, 0.5);
+    box-shadow: 0 0 15px color-mix(in srgb, var(--sunfire-accent), transparent 50%);
 }
 
 .slot:hover .delete-slot-btn {
@@ -133,17 +137,23 @@
 
 .delete-slot-btn:hover {
     background: #fff;
-    color: #ff4d00;
+    color: var(--sunfire-accent);
     transform: rotate(90deg);
 }
 
 /* --- PUSTY SLOT (TARGET ICON) --- */
 .slot.empty {
     border: 2px dashed rgba(255, 255, 255, 0.1);
-    background: rgba(255, 77, 0, 0.02);
+    background: color-mix(in srgb, var(--sunfire-accent), transparent 98%);
     display: flex;
     align-items: center;
     justify-content: center;
+    cursor: pointer;
+}
+
+.slot.empty:hover {
+    border-color: var(--sunfire-accent);
+    background: color-mix(in srgb, var(--sunfire-accent), transparent 95%);
 }
 
 .target-icon {
@@ -157,12 +167,12 @@
 
 .target-icon .plus {
     font-size: 40px;
-    color: rgba(255, 77, 0, 0.4);
+    color: color-mix(in srgb, var(--sunfire-accent), transparent 60%);
     transition: 0.3s;
 }
 
 .slot.empty:hover .plus {
-    color: #ff4d00;
+    color: var(--sunfire-accent);
     transform: scale(1.2);
 }
 
@@ -171,7 +181,7 @@
     position: absolute;
     width: 15px;
     height: 15px;
-    border: 2px solid rgba(255, 77, 0, 0.3);
+    border: 2px solid color-mix(in srgb, var(--sunfire-accent), transparent 70%);
     transition: 0.3s;
 }
 
@@ -181,7 +191,7 @@
 .br { bottom: -10px; right: -10px; border-left: 0; border-top: 0; }
 
 .slot.empty:hover .corner {
-    border-color: #ff4d00;
+    border-color: var(--sunfire-accent);
     width: 25px;
     height: 25px;
 }
@@ -191,8 +201,8 @@
     position: fixed;
     top: 0; left: 0;
     width: 100vw; height: 100vh;
-    background: rgba(0, 0, 0, 0.9);
-    backdrop-filter: blur(10px);
+    background: rgba(0, 0, 0, 0.92);
+    backdrop-filter: blur(15px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -201,18 +211,18 @@
 }
 
 .modal-content {
-    background: #111;
+    background: #0a0a0a;
     padding: 40px;
-    border-radius: 20px;
-    border: 1px solid #ff4d00;
-    width: 100%;
+    border-radius: 25px;
+    border: 1px solid var(--sunfire-accent);
+    width: 90%;
     max-width: 500px;
     text-align: center;
-    box-shadow: 0 0 50px rgba(255, 77, 0, 0.2);
+    box-shadow: 0 0 50px color-mix(in srgb, var(--sunfire-accent), transparent 85%);
 }
 
 .modal-content h2 {
-    color: #ff4d00;
+    color: var(--sunfire-accent);
     margin-bottom: 25px;
     text-transform: uppercase;
     letter-spacing: 2px;
@@ -229,32 +239,17 @@
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: white;
     padding: 15px 25px;
-    border-radius: 10px;
+    border-radius: 12px;
     cursor: pointer;
     font-weight: bold;
     transition: 0.3s;
 }
 
 .modal-content button:hover {
-    background: #ff4d00;
-    border-color: #ff4d00;
+    background: var(--sunfire-accent);
+    border-color: var(--sunfire-accent);
     transform: translateY(-3px);
-}
-
-/* Lightbox Image */
-.lightbox-content img {
-    max-width: 90vw;
-    max-height: 85vh;
-    border-radius: 10px;
-    box-shadow: 0 0 50px rgba(0,0,0,1);
-}
-
-.lightbox-close {
-    position: absolute;
-    top: 30px; right: 40px;
-    background: none; border: none;
-    color: white; font-size: 50px;
-    cursor: pointer;
+    box-shadow: 0 5px 15px color-mix(in srgb, var(--sunfire-accent), transparent 70%);
 }
 
 /* Animacje */
@@ -269,14 +264,21 @@
     align-items: center;
     justify-content: center;
     font-size: 1.5rem;
-    color: #ff4d00;
+    color: var(--sunfire-accent);
     letter-spacing: 5px;
     text-transform: uppercase;
+    animation: pulseGlow 2s infinite;
 }
 
+/* Responsywność */
 @media (max-width: 768px) {
-  .portfolio-container {
-    grid-template-columns: 1fr; /* Wymusza jedną, pełną kolumnę */
-    padding: 10px;
-  }
+    .portfolio-container {
+        padding: 40px 20px;
+    }
+    .portfolio-header h1 {
+        font-size: 2.2rem;
+    }
+    .slots-grid {
+        grid-template-columns: 1fr;
+    }
 }

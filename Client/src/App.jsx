@@ -11,14 +11,16 @@ import AboutPage from './pages/AboutPage';
 import Footer from './components/Footer';
 import LegalInfo from './pages/LegalInfo';
 
-// Upewnij się, że ten import istnieje, aby style układu działały
+// Style
 import './App.css'; 
+import './Loading.css'; 
 
 function App() {
   const [isAdmin, setIsAdmin] = useState(false);
-  const [authLoading, setAuthLoading] = useState(true);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const apiUrl = import.meta.env.VITE_API_URL;
 
+  // 1. Sprawdzanie autoryzacji
   const checkAuth = useCallback(async () => {
     try {
       const res = await fetch(`${apiUrl}/api/auth/check`, { credentials: 'include' });
@@ -27,20 +29,71 @@ function App() {
     } catch (error) {
       console.error("Auth check failed:", error);
       setIsAdmin(false);
-    } finally {
-      setAuthLoading(false);
     }
   }, [apiUrl]);
 
-  useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
+  // 2. Pobieranie konfiguracji wyglądu
+  const fetchSiteConfig = useCallback(async () => {
+    try {
+      const res = await fetch(`${apiUrl}/api/cms`);
+      if (res.ok) {
+        const config = await res.json();
+        
+        // Ustawianie koloru akcentu
+        if (config.primaryColor) {
+          document.documentElement.style.setProperty('--sunfire-accent', config.primaryColor);
+        }
 
-  if (authLoading) return <div className="loading">Weryfikacja uprawnień...</div>;
+        // Ustawianie tła (obrazek lub kolor)
+        if (config.backgroundImageUrl) {
+          document.body.style.backgroundImage = `url(${config.backgroundImageUrl})`;
+          document.body.style.backgroundSize = "cover";
+          document.body.style.backgroundPosition = "center";
+          document.body.style.backgroundAttachment = "fixed";
+        } else {
+          document.body.style.backgroundImage = "none";
+          if (config.backgroundColor) {
+            document.body.style.backgroundColor = config.backgroundColor;
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Nie udało się pobrać konfiguracji wyglądu:", error);
+    }
+  }, [apiUrl]);
+
+  // INICJALIZACJA APLIKACJI
+  useEffect(() => {
+    const initApp = async () => {
+      // Wykonujemy oba żądania równolegle, żeby było szybciej
+      await Promise.all([
+        checkAuth(),
+        fetchSiteConfig()
+      ]);
+
+      // Dodajemy małe sztuczne opóźnienie (300ms), żeby przejście było płynne
+      setTimeout(() => {
+        setIsInitialLoading(false);
+      }, 300);
+    };
+
+    initApp();
+  }, [checkAuth, fetchSiteConfig]);
+
+  // EKRAN ŁADOWANIA (Ukrywa błyski kolorów i weryfikację)
+  if (isInitialLoading) {
+    return (
+      <div className="sunfire-loader-overlay">
+        <div className="sunfire-loader">
+          <div className="loader-circle"></div>
+          <h1 className="loader-logo">SUN<span>FIRE</span></h1>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Router>
-      {/* Cała zawartość Routera ląduje w #root (zdefiniowanym w index.html) */}
       <Navbar isAdmin={isAdmin} setIsAdmin={setIsAdmin} />
       
       <main className="content-wrapper">

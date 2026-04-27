@@ -1,13 +1,13 @@
+/* Footer.css */
 .main-footer {
     width: 100%;
-    padding: 15px 0; /* Zmniejszony padding góra/dół */
+    padding: 15px 0; 
     background: rgba(18, 18, 18, 0.95);
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    /* Zmieniamy obramowanie na delikatną poświatę w kolorze akcentu */
+    border-top: 1px solid color-mix(in srgb, var(--sunfire-accent), transparent 90%);
     backdrop-filter: blur(10px);
-    
-    /* ZABEZPIECZENIE WYSOKOŚCI */
     height: auto;
-    max-height: 80px; /* Maksymalna wysokość stopki */
+    max-height: 80px;
 }
 
 .footer-content {
@@ -22,11 +22,20 @@
 }
 
 .footer-nav a {
-    color: var(--theme-accent, #ff8c00);
+    /* KLUCZOWA ZMIANA: Zmieniono --theme-accent na --sunfire-accent */
+    color: var(--sunfire-accent, #ff4d00);
     text-decoration: none;
-    transition: opacity 0.3s;
+    transition: all 0.3s ease;
+    font-weight: 500;
 }
 
 .footer-nav a:hover {
-    opacity: 0.7;
+    opacity: 1;
+    /* Dodajemy delikatny blask przy najechaniu */
+    text-shadow: 0 0 10px var(--sunfire-accent);
+}
+
+/* Jeśli masz w stopce logo typu SUNFIRE, dodaj też to: */
+.footer-logo span {
+    color: var(--sunfire-accent) !important;
 }
