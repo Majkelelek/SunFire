@@ -5,7 +5,7 @@ import './PortfolioPage.css';
 const PortfolioPage = ({ isAdmin }) => {
     const [projects, setProjects] = useState([]);
     const [loading, setLoading] = useState(true);
-    const apiUrl = import.meta.env.VITE_API_URL;
+    const apiUrl = import.meta.env.VITE_API_URL || "";
     const [expandedProject, setExpandedProject] = useState(null);
     const [editingSlot, setEditingSlot] = useState(null);
     const [modalStep, setModalStep] = useState('choose');

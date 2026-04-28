@@ -10,7 +10,7 @@ export default function Admin() {
   const [loading, setLoading] = useState(false);
   const [bgFile, setBgFile] = useState(null);
   const [uploading, setUploading] = useState(false);
-  const apiUrl = import.meta.env.VITE_API_URL;
+  const apiUrl = import.meta.env.VITE_API_URL || "";
 
   // Pobierz aktualne kolory przy wejściu do panelu
   useEffect(() => {

@@ -5,7 +5,7 @@ import './Navbar.css';
 export default function Navbar({ isAdmin, setIsAdmin }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const apiUrl = import.meta.env.VITE_API_URL;
+  const apiUrl = import.meta.env.VITE_API_URL || "";
   
   // 2. Dodajemy stan dla mobilnego menu
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);

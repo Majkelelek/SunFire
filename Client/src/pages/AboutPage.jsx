@@ -4,7 +4,7 @@ import './AboutPage.css';
 export default function AboutPage({ isAdmin }) {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
-    const apiUrl = import.meta.env.VITE_API_URL;
+    const apiUrl = import.meta.env.VITE_API_URL || "";
     
     // Modal State
     const [editingItem, setEditingItem] = useState(null); 

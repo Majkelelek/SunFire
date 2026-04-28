@@ -9,7 +9,7 @@ const SurveyForm = () => {
     const [isSent, setIsSent] = useState(false); 
     const [showPrivacy, setShowPrivacy] = useState(false);
     
-    const apiUrl = import.meta.env.VITE_API_URL;
+    const apiUrl = import.meta.env.VITE_API_URL || "";
     
     const validateEmail = (email) => /\S+@\S+\.\S+/.test(email);
 

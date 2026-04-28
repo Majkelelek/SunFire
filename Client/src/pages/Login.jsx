@@ -9,7 +9,7 @@ export default function Login({ setIsAdmin, checkAuth }) {
   const [attemptsInfo, setAttemptsInfo] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const apiUrl = import.meta.env.VITE_API_URL;
+  const apiUrl = import.meta.env.VITE_API_URL || "";
 
   const handleLogin = async (e) => {
     e.preventDefault();
