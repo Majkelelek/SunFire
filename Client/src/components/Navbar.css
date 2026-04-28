@@ -108,7 +108,7 @@ color: var(--sunfire-accent);
 }
 
 .logout-btn {
-    background: var(--sunfire-accent -10%, #ff4d00);
+    background: var(--sunfire-accent, #ff4d00);
     color: white;
     border: 1px solid var(--sunfire-accent, #ff4d00);
     padding: 8px 20px;
