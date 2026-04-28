@@ -125,5 +125,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
+app.MapFallbackToFile("index.html"); // To pozwala na odświeżanie strony w React
 app.Run();
