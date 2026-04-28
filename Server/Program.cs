@@ -8,10 +8,11 @@ using System.Threading.RateLimiting;
 using System.IdentityModel.Tokens.Jwt;
 using Server.Models; 
 using System.Security.Claims;
+using Microsoft.AspNetCore.HttpOverrides; // *** DODANE: Potrzebne do proxy na Azure
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Ładowanie ENV
+// 1. Ładowanie ENV (Na Azure pliku .env nie będzie, ale Load() po prostu to zignoruje i pobierze zmienne z portalu)
 Env.TraversePath().Load();
 var jwtKey = Environment.GetEnvironmentVariable("SUNFIRE_JWT_KEY") 
     ?? throw new Exception("Brak JWT_KEY w .env");
@@ -20,7 +21,13 @@ var mongoUri = Environment.GetEnvironmentVariable("SUNFIRE_MONGO_URI")
 
 // ZABEZPIECZENIE CORS: Pobieranie adresu frontendu
 var frontendUrl = Environment.GetEnvironmentVariable("FRONTEND_URL") 
-    ?? "http://localhost:5173"; 
+    ?? "https://twoja-aplikacja.azurewebsites.net"; // Zmień domyślny fallback na https w razie czego
+
+// *** DODANE: Konfiguracja dla Reverse Proxy (Azure) aby Rate Limiter widział prawdziwe IP
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+});
 
 // 2. Usługi
 builder.Services.AddSingleton<IMongoClient>(new MongoClient(mongoUri));
@@ -115,8 +122,13 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// *** DODANE: Middleware do odczytu nagłówków proxy z Azure
+app.UseForwardedHeaders();
+
 // 6. Middleware (Kolejność krytyczna!)
 app.UseCors("SunfirePolicy");
+
+app.UseDefaultFiles(); // *** DODANE: Dzięki temu wejście na '/' wczyta 'index.html'
 app.UseStaticFiles();
 
 app.UseRateLimiter();

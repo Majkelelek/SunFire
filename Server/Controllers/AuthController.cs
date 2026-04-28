@@ -33,24 +33,22 @@ namespace Server.Controllers
             if (user == null) 
                 return Unauthorized("Błędne dane logowania");
 
-            // 1. Sprawdź czy konto jest obecnie zablokowane
-            if (user.LockoutEnd.HasValue && user.LockoutEnd > DateTime.Now)
+            // 1. Używamy UtcNow dla spójności na Azure
+            if (user.LockoutEnd.HasValue && user.LockoutEnd > DateTime.UtcNow)
             {
-                var remainingTime = Math.Ceiling((user.LockoutEnd.Value - DateTime.Now).TotalMinutes);
+                var remainingTime = Math.Ceiling((user.LockoutEnd.Value - DateTime.UtcNow).TotalMinutes);
                 return BadRequest($"Zbyt wiele nieudanych prób. Konto zablokowane na jeszcze {remainingTime} min.");
             }
 
-            // 2. Weryfikacja hasła
             if (!BCrypt.Net.BCrypt.Verify(req.Password, user.PasswordHash))
             {
-                // Zwiększ licznik błędów
                 int newAttempts = user.FailedAttempts + 1;
                 var updateDef = Builders<User>.Update.Set(u => u.FailedAttempts, newAttempts);
 
                 if (newAttempts >= 5)
                 {
-                    // Nałóż blokadę na 15 minut
-                    updateDef = updateDef.Set(u => u.LockoutEnd, DateTime.Now.AddMinutes(15));
+                    // Blokada na podstawie UTC
+                    updateDef = updateDef.Set(u => u.LockoutEnd, DateTime.UtcNow.AddMinutes(15));
                     await _users.UpdateOneAsync(u => u.Id == user.Id, updateDef);
                     return BadRequest("Przekroczono limit prób. Konto zablokowane na 15 minut.");
                 }
@@ -59,42 +57,63 @@ namespace Server.Controllers
                 return Unauthorized(new { message = "Błędne dane logowania", remainingAttempts = 5 - newAttempts });
             }
 
-            // 3. Sukces - Resetujemy licznik i blokadę
-            var successUpdate = Builders<User>.Update
-                .Set(u => u.FailedAttempts, 0)
-                .Set(u => u.LockoutEnd, null);
-
-            // ... reszta Twojej logiki generowania tokena JWT ...
+            // 3. Sukces
             var claims = new[] { 
                 new Claim(ClaimTypes.Name, user.Username),
                 new Claim(ClaimTypes.Role, "Admin")
             };
             
-            // (generowanie tokena tak jak masz w kodzie)
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtKey));
             var token = new JwtSecurityToken(
                 claims: claims,
-                expires: DateTime.Now.AddHours(4),
+                expires: DateTime.UtcNow.AddHours(4), // UTC!
                 signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
             );
             var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 
-            // Zapisz token i zresetuj liczniki w jednej operacji
-            successUpdate = successUpdate.Set(u => u.CurrentToken, tokenString);
+            var successUpdate = Builders<User>.Update
+                .Set(u => u.FailedAttempts, 0)
+                .Set(u => u.LockoutEnd, null)
+                .Set(u => u.CurrentToken, tokenString);
+                
             await _users.UpdateOneAsync(u => u.Id == user.Id, successUpdate);
 
-            var isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development"; // Sprawdzenie środowiska
+            // Sprawdzenie czy jesteśmy na produkcji
+            var isProd = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Development";
 
             // Wysyłka ciasteczka
             Response.Cookies.Append(CookieName, tokenString, new CookieOptions {
                 HttpOnly = true,
-                Secure = true, // Wymagane przez przeglądarki dla SameSiteMode.None
-                SameSite = SameSiteMode.None, // Kluczowe! Pozwala wysyłać ciastko z portu 5173 na 5150
+                Secure = true, // Na Azure ZAWSZE true (wymagane dla SameSite=None)
+                SameSite = SameSiteMode.None, 
                 Path = "/",
-                Expires = DateTime.Now.AddHours(4)
+                Expires = DateTime.UtcNow.AddHours(4)
             });
 
             return Ok(new { message = "Zalogowano" });
+        }
+
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout()
+        {
+            var tokenFromCookie = Request.Cookies[CookieName];
+
+            if (!string.IsNullOrEmpty(tokenFromCookie))
+            {
+                var update = Builders<User>.Update.Set(u => u.CurrentToken, null);
+                await _users.UpdateOneAsync(u => u.CurrentToken == tokenFromCookie, update);
+            }
+
+            // MUSI mieć te same parametry co w Login, inaczej przeglądarka nie usunie ciastka!
+            Response.Cookies.Delete(CookieName, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true, 
+                SameSite = SameSiteMode.None,
+                Path = "/"
+            });
+
+            return Ok(new { message = "Wylogowano pomyślnie" });
         }
         [HttpPost("register")]
         [Authorize] 
@@ -153,30 +172,6 @@ namespace Server.Controllers
                 isAuthenticated = true,
                 username = user.Username 
             });
-        }
-
-        [HttpPost("logout")]
-        public async Task<IActionResult> Logout()
-        {
-            var tokenFromCookie = Request.Cookies[CookieName];
-
-            if (!string.IsNullOrEmpty(tokenFromCookie))
-            {
-                // --- USUWAMY TOKEN Z BAZY ---
-                var update = Builders<User>.Update.Set(u => u.CurrentToken, null);
-                await _users.UpdateOneAsync(u => u.CurrentToken == tokenFromCookie, update);
-            }
-
-            // --- USUWAMY CIASTKO (musi mieć te same opcje co w Login!) ---
-            Response.Cookies.Delete(CookieName, new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = false, // musi być identyczne jak w Login
-                SameSite = SameSiteMode.Lax,
-                Path = "/"
-            });
-
-            return Ok(new { message = "Wylogowano pomyślnie" });
         }
     }
 }

@@ -21,13 +21,21 @@ namespace Server.Controllers
             var database = client.GetDatabase("SunfireDB");
             _config = database.GetCollection<SiteConfig>("Settings");
 
-            // Inicjalizacja Cloudinary danymi z .env
-            var account = new Account(
-                Environment.GetEnvironmentVariable("CLOUDINARY_CLOUD_NAME"),
-                Environment.GetEnvironmentVariable("CLOUDINARY_API_KEY"),
-                Environment.GetEnvironmentVariable("CLOUDINARY_API_SECRET")
-            );
-            _cloudinary = new Cloudinary(account);
+            // 1. POPRAWKA: Pobieramy zmienne
+            var cloudName = Environment.GetEnvironmentVariable("CLOUDINARY_CLOUD_NAME");
+            var apiKey = Environment.GetEnvironmentVariable("CLOUDINARY_API_KEY");
+            var apiSecret = Environment.GetEnvironmentVariable("CLOUDINARY_API_SECRET");
+
+            // Jeśli brakuje kluczy, logujemy błąd, ale nie wysypujemy całej aplikacji (wtedy po prostu upload nie zadziała)
+            if (string.IsNullOrEmpty(cloudName) || string.IsNullOrEmpty(apiKey) || string.IsNullOrEmpty(apiSecret))
+            {
+                Console.WriteLine("OSTRZEŻENIE: Brak zmiennych CLOUDINARY w środowisku! Upload obrazów nie będzie działał.");
+            }
+            else
+            {
+                var account = new Account(cloudName, apiKey, apiSecret);
+                _cloudinary = new Cloudinary(account);
+            }
         }
 
         [HttpGet]
@@ -50,8 +58,6 @@ namespace Server.Controllers
             }
             else
             {
-                // KLUCZOWA ZMIANA: Aktualizujemy tylko pola odpowiedzialne za kolory.
-                // Dzięki temu nie kasujemy linków do Cloudinary, które są już w bazie!
                 var updateDefinition = Builders<SiteConfig>.Update
                     .Set(c => c.PrimaryColor, newData.PrimaryColor)
                     .Set(c => c.BackgroundColor, newData.BackgroundColor);
@@ -66,26 +72,29 @@ namespace Server.Controllers
         [Authorize]
         public async Task<IActionResult> UploadBackground(IFormFile file)
         {
-            if (file == null || file.Length == 0) 
-                return BadRequest("Nie wybrano pliku");
+            if (_cloudinary == null) return StatusCode(500, "Cloudinary nie jest skonfigurowane.");
+            if (file == null || file.Length == 0) return BadRequest("Nie wybrano pliku");
 
-            // --- ZABEZPIECZENIE TYPU I ROZMIARU PLIKU ---
             if (!IsValidImage(file))
                 return BadRequest("Niedozwolony typ pliku. Dozwolone są tylko obrazy (JPG, PNG, WEBP, GIF).");
 
             if (file.Length > 10 * 1024 * 1024)
                 return BadRequest("Plik przekracza limit 10MB.");
-            // ---------------------------------------------
 
-            // 1. Przesyłanie do Cloudinary
+            // Opcjonalnie: Usuń stare tło z Cloudinary przed dodaniem nowego
+            var existing = await _config.Find(_ => true).FirstOrDefaultAsync();
+            if (existing != null && !string.IsNullOrEmpty(existing.BackgroundImageUrl))
+            {
+                await DeleteFromCloudinary(existing.BackgroundImageUrl);
+            }
+
             var uploadResult = new ImageUploadResult();
-
             using (var stream = file.OpenReadStream())
             {
                 var uploadParams = new ImageUploadParams()
                 {
                     File = new FileDescription(file.FileName, stream),
-                    Folder = "sunfire_backgrounds", // Folder w Twoim panelu Cloudinary
+                    Folder = "sunfire_backgrounds",
                     Transformation = new Transformation().Quality("auto").FetchFormat("auto") 
                 };
                 uploadResult = await _cloudinary.UploadAsync(uploadParams);
@@ -94,11 +103,7 @@ namespace Server.Controllers
             if (uploadResult.Error != null) 
                 return BadRequest(uploadResult.Error.Message);
 
-            // 2. Pobieramy bezpieczny URL z chmury
             var url = uploadResult.SecureUrl.ToString();
-
-            // 3. Aktualizujemy bazę MongoDB linkiem do Cloudinary
-            var existing = await _config.Find(_ => true).FirstOrDefaultAsync();
             
             if (existing == null) {
                 await _config.InsertOneAsync(new SiteConfig { BackgroundImageUrl = url });
@@ -118,7 +123,12 @@ namespace Server.Controllers
             if (existing == null || string.IsNullOrEmpty(existing.BackgroundImageUrl))
                 return BadRequest("Brak zdjęcia do usunięcia");
 
-            // Aktualizujemy dokument, ustawiając URL na null
+            // 2. POPRAWKA: Usunięcie starego pliku bezpośrednio z Cloudinary
+            if (_cloudinary != null)
+            {
+                await DeleteFromCloudinary(existing.BackgroundImageUrl);
+            }
+
             var update = Builders<SiteConfig>.Update.Set(c => c.BackgroundImageUrl, null);
             await _config.UpdateOneAsync(_ => true, update);
 
@@ -129,19 +139,15 @@ namespace Server.Controllers
         [Authorize]
         public async Task<IActionResult> UploadImage(IFormFile file)
         {
-            if (file == null || file.Length == 0) 
-                return BadRequest("Brak pliku");
+            if (_cloudinary == null) return StatusCode(500, "Cloudinary nie jest skonfigurowane.");
+            if (file == null || file.Length == 0) return BadRequest("Brak pliku");
 
-            // --- ZABEZPIECZENIE TYPU I ROZMIARU PLIKU ---
             if (!IsValidImage(file))
                 return BadRequest("Niedozwolony typ pliku. Dozwolone są tylko obrazy (JPG, PNG, WEBP, GIF).");
 
             long maxFileSize = 10 * 1024 * 1024; 
             if (file.Length > maxFileSize)
-            {
                 return BadRequest("Plik przekracza limit 10MB.");
-            }
-            // ---------------------------------------------
                 
             using var stream = file.OpenReadStream();
             var uploadParams = new ImageUploadParams()
@@ -155,7 +161,6 @@ namespace Server.Controllers
             return Ok(new { url = result.SecureUrl.ToString() });
         }
 
-        // --- PRYWATNA METODA WALIDUJĄCA PLIK ---
         private bool IsValidImage(IFormFile file)
         {
             var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp", ".gif" };
@@ -169,6 +174,31 @@ namespace Server.Controllers
                 return false;
 
             return true;
+        }
+
+        // --- METODA POMOCNICZA: Usuwanie z Cloudinary ---
+        private async Task DeleteFromCloudinary(string fileUrl)
+        {
+            try
+            {
+                // Wyciąganie Public ID z URL (ostatni segment bez rozszerzenia, razem ze ścieżką folderu)
+                var uri = new Uri(fileUrl);
+                var segments = uri.Segments;
+                // Cloudinary URL format: /.../upload/v1234567/folder/filename.ext
+                var uploadIndex = Array.FindIndex(segments, s => s == "upload/");
+                if(uploadIndex > -1 && segments.Length > uploadIndex + 2)
+                {
+                    // Pomijamy 'v1234567/' (wersję) i sklejamy resztę
+                    var publicIdWithExt = string.Join("", segments.Skip(uploadIndex + 2)); 
+                    var publicId = Path.ChangeExtension(publicIdWithExt, null); // Usuwamy .jpg / .png
+                    
+                    await _cloudinary.DestroyAsync(new DeletionParams(publicId));
+                }
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine($"Nie udało się usunąć obrazu z chmury: {ex.Message}");
+            }
         }
     }
 }
