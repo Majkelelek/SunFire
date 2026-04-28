@@ -13,21 +13,43 @@ jobs:
   build:
     runs-on: windows-latest
     permissions:
-      contents: read #This is required for actions/checkout
+      contents: read
 
     steps:
       - uses: actions/checkout@v4
 
+      # 1. Konfiguracja Node.js dla Frontendu
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # 2. Instalacja i budowanie Frontendu (Vite)
+      - name: Install and Build Frontend
+        working-directory: ./Client
+        run: |
+          npm install
+          npm run build
+
+      # 3. Kopiowanie zbudowanego frontendu do folderu wwwroot serwera
+      - name: Copy frontend to Server wwwroot
+        run: |
+          mkdir -p Server/wwwroot
+          xcopy /E /I /Y .\Client\dist\* .\Server\wwwroot\
+
+      # 4. Konfiguracja .NET
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.x'
 
+      # 5. Budowanie projektu .NET
       - name: Build with dotnet
-        run: dotnet build --configuration Release
+        run: dotnet build Server/Server.csproj --configuration Release
 
+      # 6. Publikacja (Frontend jest już w wwwroot, więc zostanie spakowany razem z API)
       - name: dotnet publish
-        run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
+        run: dotnet publish Server/Server.csproj -c Release -o "${{env.DOTNET_ROOT}}/myapp"
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -39,8 +61,8 @@ jobs:
     runs-on: windows-latest
     needs: build
     permissions:
-      id-token: write #This is required for requesting the JWT
-      contents: read #This is required for actions/checkout
+      id-token: write
+      contents: read
 
     steps:
       - name: Download artifact from build job
@@ -62,4 +84,3 @@ jobs:
           app-name: 'SF'
           slot-name: 'Production'
           package: .
-          
