@@ -8,9 +8,15 @@ using System.Threading.RateLimiting;
 using Server.Models; 
 using System.Security.Claims;
 using Microsoft.AspNetCore.HttpOverrides;
-using System.Security.Authentication; // *** DODANE: Do obsługi TLS 1.2
+using System.Security.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// *** DODANE: Ukrywanie informacji o serwerze (Naprawia "Server Leaks Version Information")
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.AddServerHeader = false;
+});
 
 // 1. Ładowanie ENV
 Env.TraversePath().Load();
@@ -22,11 +28,11 @@ var mongoUri = Environment.GetEnvironmentVariable("SUNFIRE_MONGO_URI")
 var frontendUrl = Environment.GetEnvironmentVariable("FRONTEND_URL") 
     ?? "http://localhost:5173"; 
 
-// 2. KONFIGURACJA MONGODB (Naprawia błąd "Local Security Authority")
+// 2. KONFIGURACJA MONGODB
 var mongoSettings = MongoClientSettings.FromConnectionString(mongoUri);
 mongoSettings.SslSettings = new SslSettings 
 { 
-    EnabledSslProtocols = SslProtocols.Tls12 // Wymuszenie TLS 1.2 dla Azure Windows
+    EnabledSslProtocols = SslProtocols.Tls12 
 };
 builder.Services.AddSingleton<IMongoClient>(new MongoClient(mongoSettings));
 
@@ -107,21 +113,43 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// KOLEJNOŚĆ MIDDLEWARE (Krytyczna dla Azure Windows)
+// KOLEJNOŚĆ MIDDLEWARE (Krytyczna)
 app.UseForwardedHeaders();
+
+// *** DODANE: Globalne nagłówki bezpieczeństwa (Naprawia większość ostrzeżeń z ZAP)
+app.Use(async (context, next) =>
+{
+    // Ochrona przed MIME-sniffingiem
+    context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+    
+    // Ochrona przed Clickjackingiem (ramki)
+    context.Response.Headers.Append("X-Frame-Options", "DENY");
+    
+    // Wymuszenie HTTPS (HSTS) - 1 rok
+    context.Response.Headers.Append("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
+    
+    // Ochrona przed atakami XSS (starsze przeglądarki)
+    context.Response.Headers.Append("X-XSS-Protection", "1; mode=block");
+    
+    // Content Security Policy (CSP)
+    // UWAGA: Skonfigurowana w sposób przyjazny dla Reacta. Pozwala na ładowanie obrazków i stylów z zewnętrznych źródeł (np. Google Fonts).
+    context.Response.Headers.Append("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https:;");
+
+    await next();
+});
 
 app.UseCors("SunfirePolicy");
 
-app.UseDefaultFiles(); // Pozwala na serwowanie index.html jako strony głównej
+app.UseDefaultFiles(); 
 app.UseStaticFiles();
 
-app.UseRouting(); // *** DODANE: Jawne włączenie routingu
+app.UseRouting();
 
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers(); // Najpierw szukaj ścieżek API
-app.MapFallbackToFile("index.html"); // Wszystko inne kieruj do Reacta
+app.MapControllers(); 
+app.MapFallbackToFile("index.html"); 
 
 app.Run();
