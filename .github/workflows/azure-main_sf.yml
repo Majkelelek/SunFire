@@ -33,9 +33,7 @@ jobs:
 
       # 3. Kopiowanie zbudowanego frontendu do folderu wwwroot serwera
       - name: Copy frontend to Server wwwroot
-        run: |
-          mkdir -p Server/wwwroot
-          xcopy /E /I /Y .\Client\dist\* .\Server\wwwroot\
+        run: xcopy /E /I /Y .\Client\dist\* .\Server\wwwroot\
 
       # 4. Konfiguracja .NET
       - name: Set up .NET Core
