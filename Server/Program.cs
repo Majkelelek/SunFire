@@ -5,44 +5,48 @@ using System.Text;
 using DotNetEnv;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Threading.RateLimiting;
-using System.IdentityModel.Tokens.Jwt;
 using Server.Models; 
 using System.Security.Claims;
-using Microsoft.AspNetCore.HttpOverrides; // *** DODANE: Potrzebne do proxy na Azure
+using Microsoft.AspNetCore.HttpOverrides;
+using System.Security.Authentication; // *** DODANE: Do obsługi TLS 1.2
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Ładowanie ENV (Na Azure pliku .env nie będzie, ale Load() po prostu to zignoruje i pobierze zmienne z portalu)
+// 1. Ładowanie ENV
 Env.TraversePath().Load();
 var jwtKey = Environment.GetEnvironmentVariable("SUNFIRE_JWT_KEY") 
-    ?? throw new Exception("Brak JWT_KEY w .env");
+    ?? throw new Exception("Brak SUNFIRE_JWT_KEY w konfiguracji");
 var mongoUri = Environment.GetEnvironmentVariable("SUNFIRE_MONGO_URI") 
-    ?? throw new Exception("Brak MONGO_URI w .env");
+    ?? throw new Exception("Brak SUNFIRE_MONGO_URI w konfiguracji");
 
-// ZABEZPIECZENIE CORS: Pobieranie adresu frontendu
 var frontendUrl = Environment.GetEnvironmentVariable("FRONTEND_URL") 
-    ?? "https://twoja-aplikacja.azurewebsites.net"; // Zmień domyślny fallback na https w razie czego
+    ?? "http://localhost:5173"; 
 
-// *** DODANE: Konfiguracja dla Reverse Proxy (Azure) aby Rate Limiter widział prawdziwe IP
-builder.Services.Configure<ForwardedHeadersOptions>(options =>
-{
-    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-});
+// 2. KONFIGURACJA MONGODB (Naprawia błąd "Local Security Authority")
+var mongoSettings = MongoClientSettings.FromConnectionString(mongoUri);
+mongoSettings.SslSettings = new SslSettings 
+{ 
+    EnabledSslProtocols = SslProtocols.Tls12 // Wymuszenie TLS 1.2 dla Azure Windows
+};
+builder.Services.AddSingleton<IMongoClient>(new MongoClient(mongoSettings));
 
-// 2. Usługi
-builder.Services.AddSingleton<IMongoClient>(new MongoClient(mongoUri));
-
-// Wstrzykiwanie bazy danych do DI
 builder.Services.AddSingleton<IMongoDatabase>(sp => 
     sp.GetRequiredService<IMongoClient>().GetDatabase("SunfireDB"));
 
+// 3. Konfiguracja dla Azure Proxy
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear(); 
+    options.KnownProxies.Clear();
+});
+
 builder.Services.AddControllers();
 
-// 3. Rate Limiter (Ochrona przed spamem)
+// 4. Rate Limiter
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-
     options.AddPolicy("ContactSpamProtection", httpContext =>
         RateLimitPartition.GetFixedWindowLimiter(
             partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
@@ -50,12 +54,11 @@ builder.Services.AddRateLimiter(options =>
             {
                 AutoReplenishment = true,
                 PermitLimit = 3, 
-                QueueLimit = 0,
                 Window = TimeSpan.FromMinutes(15) 
             }));
 });
 
-// 4. Autentykacja JWT z kuloodporną weryfikacją sesji
+// 5. Autentykacja JWT
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options => {
         options.TokenValidationParameters = new TokenValidationParameters {
@@ -67,48 +70,30 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
         options.Events = new JwtBearerEvents {
             OnMessageReceived = context => {
-                // Wyciąganie tokena z ciasteczka
                 context.Token = context.Request.Cookies["sunfire_auth"];
                 return Task.CompletedTask;
             },
             OnTokenValidated = async context => {
                 var db = context.HttpContext.RequestServices.GetRequiredService<IMongoDatabase>();
                 var users = db.GetCollection<User>("Users");
-                
-                // Wyciągamy tożsamość użytkownika
                 var username = context.Principal?.Identity?.Name 
                                ?? context.Principal?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
-                
-                // Pobieramy surowy token bezpośrednio z ciasteczka (naprawia błędy rzutowania JwtSecurityToken)
                 var rawToken = context.Request.Cookies["sunfire_auth"];
                 
                 if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(rawToken)) {
-                    Console.WriteLine("❌ BŁĄD JWT: Brak username lub surowego tokenu.");
                     context.Fail("Unauthorized");
                     return;
                 }
 
                 var user = await users.Find(u => u.Username == username).FirstOrDefaultAsync();
-                
-                if (user == null) {
-                    Console.WriteLine($"❌ BŁĄD JWT: Nie znaleziono usera {username} w bazie.");
-                    context.Fail("User not found");
-                    return;
-                }
-
-                // Weryfikacja: Czy token w ciasteczku jest tym samym, który zapisał AuthController podczas logowania?
-                if (user.CurrentToken != rawToken) {
-                    Console.WriteLine("❌ BŁĄD JWT: Token unieważniony (niezgodność z bazą).");
+                if (user == null || user.CurrentToken != rawToken) {
                     context.Fail("Session invalidated");
-                    return;
                 }
-                
-                Console.WriteLine($"✅ SUKCES JWT: Zalogowano {username}");
             }
         };
     });
 
-// 5. CORS
+// 6. CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("SunfirePolicy", corsBuilder =>
@@ -122,20 +107,21 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// *** DODANE: Middleware do odczytu nagłówków proxy z Azure
+// KOLEJNOŚĆ MIDDLEWARE (Krytyczna dla Azure Windows)
 app.UseForwardedHeaders();
 
-// 6. Middleware (Kolejność krytyczna!)
 app.UseCors("SunfirePolicy");
 
-app.UseDefaultFiles(); // *** DODANE: Dzięki temu wejście na '/' wczyta 'index.html'
+app.UseDefaultFiles(); // Pozwala na serwowanie index.html jako strony głównej
 app.UseStaticFiles();
 
-app.UseRateLimiter();
+app.UseRouting(); // *** DODANE: Jawne włączenie routingu
 
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers();
-app.MapFallbackToFile("index.html"); // To pozwala na odświeżanie strony w React
+app.MapControllers(); // Najpierw szukaj ścieżek API
+app.MapFallbackToFile("index.html"); // Wszystko inne kieruj do Reacta
+
 app.Run();

@@ -18,7 +18,7 @@ import './Loading.css';
 function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
-  const apiUrl = import.meta.env.VITE_API_URL;
+  const apiUrl = import.meta.env.VITE_API_URL || "";
 
   // 1. Sprawdzanie autoryzacji
   const checkAuth = useCallback(async () => {
