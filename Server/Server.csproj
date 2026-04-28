@@ -15,9 +15,6 @@
     <PackageReference Include="MongoDB.Driver" Version="3.8.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.0.0" />
-    <Content Include="wwwroot\**">
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
   </ItemGroup>
 
 </Project>
