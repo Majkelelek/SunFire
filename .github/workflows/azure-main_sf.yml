@@ -1,0 +1,86 @@
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+
+name: Build and deploy ASP.Net Core app to Azure Web App - SF
+
+on:
+  push:
+    branches:
+      - AZURE-MAIN
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # 1. Konfiguracja Node.js dla Frontendu
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # 2. Instalacja i budowanie Frontendu (Vite)
+      - name: Install and Build Frontend
+        working-directory: ./Client
+        run: |
+          npm install
+          npm run build
+
+      # 3. Kopiowanie zbudowanego frontendu do folderu wwwroot serwera
+      - name: Copy frontend to Server wwwroot
+        run: |
+          mkdir -p Server/wwwroot
+          xcopy /E /I /Y .\Client\dist\* .\Server\wwwroot\
+
+      # 4. Konfiguracja .NET
+      - name: Set up .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.x'
+
+      # 5. Budowanie projektu .NET
+      - name: Build with dotnet
+        run: dotnet build Server/Server.csproj --configuration Release
+
+      # 6. Publikacja (Frontend jest już w wwwroot, więc zostanie spakowany razem z API)
+      - name: dotnet publish
+        run: dotnet publish Server/Server.csproj -c Release -o "${{env.DOTNET_ROOT}}/myapp"
+
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v4
+        with:
+          name: .net-app
+          path: ${{env.DOTNET_ROOT}}/myapp
+
+  deploy:
+    runs-on: windows-latest
+    needs: build
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          name: .net-app
+      
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_E1B148B3C26849BE8FA0C6F4FAE1413D }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_5E8064CA361A4DAD8A3492BF24FFD9C8 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_E65C91A7B5554C159CE78D6611E44493 }}
+
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'SF'
+          slot-name: 'Production'
+          package: .
