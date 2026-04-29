@@ -84,7 +84,7 @@ export default function AboutPage({ isAdmin }) {
         finally { setIsSaving(false); }
     };
 
-    if (loading) return <div className="loading">SYSTEM LOADING...</div>;
+    if (loading) return <div className="loading"></div>;
     if (!data) return <div className="error-screen">(Błąd połączenia z serwerem).</div>;
 
     return (

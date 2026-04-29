@@ -121,7 +121,7 @@ const PortfolioPage = ({ isAdmin }) => {
         setUploading(false);
     };
 
-    if (loading) return <div className="loading">Wczytywanie...</div>;
+    if (loading) return <div className="loading"></div>;
 
     return (
         <div className="portfolio-container">
