@@ -206,18 +206,31 @@ const SurveyForm = () => {
                         <button className="close-modal" onClick={() => setShowPrivacy(false)}>×</button>
                         <div className="modal-scroll-area">
                             <h1 className="modal-title">POLITYKA PRYWATNOŚCI</h1>
-                            <p className="modal-date">Ostatnia aktualizacja: 26.04.2026</p>
+                            <p className="modal-date">Ostatnia aktualizacja: 29.04.2026</p>
+                            
                             <section className="modal-section">
                                 <h2><span>01.</span> Administrator Danych</h2>
-                                <p>Administratorem danych osobowych serwisu <strong>Sunfire</strong> jest właściciel strony. Szanuję Twoją prywatność i nie gromadzę danych w celach marketingowych.</p>
+                                <p>Administratorem danych osobowych serwisu <strong>Sunfire</strong> jest [Twoje Imię i Nazwisko / Nazwa Firmy] z siedzibą w [Twoje Miasto]. Kontakt e-mail: [Twój E-mail].</p>
                             </section>
+
                             <section className="modal-section">
-                                <h2><span>02.</span> Formularz Kontaktowy</h2>
-                                <p>Dane przesyłane formularzem trafiają bezpośrednio na skrzynkę e-mail i nie są zapisywane w bazie danych serwisu.</p>
+                                <h2><span>02.</span> Cel Przetwarzania</h2>
+                                <p>Twoje dane (imię, e-mail) przetwarzane są wyłącznie w celu obsługi zapytania z formularza kontaktowego lub przygotowania wyceny projektu.</p>
                             </section>
+
+                            <section className="modal-section">
+                                <h2><span>03.</span> Bezpieczeństwo</h2>
+                                <p>Dane <strong>nie są zapisywane w bazie danych</strong>. Trafiają one bezpośrednio na zabezpieczoną skrzynkę e-mail i są usuwane po zakończeniu kontaktu.</p>
+                            </section>
+
+                            <section className="modal-section">
+                                <h2><span>04.</span> Twoje Prawa</h2>
+                                <p>Masz prawo do wglądu w swoje dane, ich poprawienia lub żądania usunięcia naszej korespondencji e-mail w dowolnym momencie.</p>
+                            </section>
+
                             <div className="modal-cookie-box">
                                 <h3>Informacja o plikach Cookies</h3>
-                                <p>Serwis wykorzystuje ciasteczka wyłącznie do celów technicznych.</p>
+                                <p>Strona nie wykorzystuje żadnych plików cookies śledzących, analitycznych ani reklamowych wobec odwiedzających gości.</p>
                             </div>
                         </div>
                     </div>
