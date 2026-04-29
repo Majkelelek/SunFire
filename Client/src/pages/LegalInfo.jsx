@@ -26,8 +26,8 @@ const LegalInfo = () => {
                         <span style={{ color: 'var(--primary)' }}>01.</span> Administrator Danych
                     </h2>
                     <p style={{ color: '#aaa', lineHeight: '1.7' }}>
-                        Administratorem Twoich danych osobowych jest <strong>[Twoje Imię i Nazwisko / Nazwa Firmy]</strong> z siedzibą w [Twoje Miasto]. 
-                        W sprawach związanych z ochroną danych możesz skontaktować się pod adresem e-mail: <strong>[Twój E-mail Kontaktowy]</strong>.
+                        Administratorem Twoich danych osobowych jest <strong>[Nazwa Firmy]</strong> z siedzibą w [Miasto]. 
+                        W sprawach związanych z ochroną danych możesz skontaktować się pod adresem e-mail: <strong>[E-mail]</strong>.
                     </p>
                 </section>
 
