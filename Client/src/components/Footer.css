@@ -1,13 +1,25 @@
-/* Footer.css */
 .main-footer {
     width: 100%;
     padding: 15px 0; 
-    background: rgba(18, 18, 18, 0.95);
-    /* Zmieniamy obramowanie na delikatną poświatę w kolorze akcentu */
+    background: color-mix(in srgb, var(--sunfire-accent), transparent 95%);
     border-top: 1px solid color-mix(in srgb, var(--sunfire-accent), transparent 90%);
     backdrop-filter: blur(10px);
     height: auto;
     max-height: 80px;
+    /* Kluczowe: pozycjonowanie dla elementu glow */
+    position: relative;
+    overflow: hidden;
+}
+
+/* Twoja klasa z drobną korektą pozycji i szerokości */
+.footer-bottom-glow {
+    position: absolute;
+    top: -1px; /* Umieszczenie na górnej krawędzi stopki */
+    left: 0;
+    width: 500%; /* Zmienione z 1000% na 100%, skoro nie ma animacji */
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--sunfire-accent, #ff4d00), transparent 20%);
+    opacity: 0.3;
 }
 
 .footer-content {
@@ -19,10 +31,12 @@
     gap: 10px;
     color: #666;
     font-size: 0.9rem;
+    /* Zapewnia, że tekst jest nad poświatą */
+    position: relative;
+    z-index: 1;
 }
 
 .footer-nav a {
-    /* KLUCZOWA ZMIANA: Zmieniono --theme-accent na --sunfire-accent */
     color: var(--sunfire-accent, #ff4d00);
     text-decoration: none;
     transition: all 0.3s ease;
@@ -31,11 +45,5 @@
 
 .footer-nav a:hover {
     opacity: 1;
-    /* Dodajemy delikatny blask przy najechaniu */
     text-shadow: 0 0 10px var(--sunfire-accent);
-}
-
-/* Jeśli masz w stopce logo typu SUNFIRE, dodaj też to: */
-.footer-logo span {
-    color: var(--sunfire-accent) !important;
 }

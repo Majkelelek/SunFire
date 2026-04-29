@@ -98,7 +98,7 @@ function App() {
       
       <main className="content-wrapper">
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<Home isAdmin={isAdmin} />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route 
             path="/login" 

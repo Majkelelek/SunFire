@@ -7,11 +7,13 @@ const Footer = () => {
 
     return (
         <footer className="main-footer">
+            {/* Dodana linia poświaty */}
+            <div className="footer-bottom-glow"></div>
+            
             <div className="footer-content">
                 <p>&copy; {currentYear} SunFire. Wszystkie prawa zastrzeżone.</p>
                 <nav className="footer-nav">
                     <Link to="/polityka-prywatnosci">Polityka Prywatności</Link>
-                    {/* Możesz tu dodać inne linki, np. do Social Mediów */}
                 </nav>
             </div>
         </footer>

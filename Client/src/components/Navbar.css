@@ -2,10 +2,10 @@
     position: sticky;
     top: 0;
     z-index: 1000;
-    background: rgba(5, 5, 5, 0.8);
+    background: color-mix(in srgb, var(--sunfire-accent), transparent 96%);
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
-    border-bottom: 1px solid rgba(255, 77, 0, 0.1);
+    border-bottom: 0px solid color-mix(in srgb, var(--sunfire-accent), transparent 90%);
     height: 80px;
     display: flex;
     align-items: center;
@@ -129,11 +129,11 @@ color: var(--sunfire-accent);
 /* Poświata pod całym navbarem (delikatna) */
 .nav-bottom-glow {
     position: absolute;
-    bottom: -1px;
     left: 0;
-    width: 100%;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--sunfire-accent, #ff4d00), transparent);
+    bottom: -1px; /* Umieszczenie tuż pod paskiem nawigacji */
+    width: 1000%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--sunfire-accent, #ff4d00), transparent 10%);
     opacity: 0.3;
 }
 /* --- MENU MOBILNE (HAMBURGER) --- */
