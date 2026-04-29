@@ -68,3 +68,31 @@ html, body {
   font-weight: 900;
   /* Jeśli miałeś tu inne style logo, zostają bez zmian */
 }
+
+/* --- CUSTOM SCROLLBAR --- */
+
+/* Firefox (prostsza stylizacja) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(100, 100, 100) transparent; /* Kolor suwaka i tła */
+}
+
+/* Chrome, Edge, Safari (WebKit) */
+::-webkit-scrollbar {
+  width: 8px; /* Szerokość pionowego paska */
+  height: 8px; /* Wysokość poziomego paska */
+}
+
+::-webkit-scrollbar-track {
+  background: #0a0a0a; /* Kolor tła ścieżki */
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--sunfire-accent, #ff4d00); /* Kolor suwaka */
+  border-radius: 10px;
+  border: 2px solid #0a0a0a; /* Efekt "odstępu" od krawędzi */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #fff; /* Kolor po najechaniu myszką */
+}

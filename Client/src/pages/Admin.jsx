@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { HexColorPicker } from "react-colorful"; // Biblioteka do przesuwania kolorów
+import { HexColorPicker } from "react-colorful";
 import './Admin.css';
 
 export default function Admin() {
@@ -10,29 +10,32 @@ export default function Admin() {
   const [loading, setLoading] = useState(false);
   const [bgFile, setBgFile] = useState(null);
   const [uploading, setUploading] = useState(false);
+  
+  // State dla modala (analogicznie do AboutPage)
+  const [modal, setModal] = useState({ isOpen: false, title: '', msg: '', isConfirm: false, onConfirm: null });
+
   const apiUrl = import.meta.env.VITE_API_URL || "";
 
-  // Pobierz aktualne kolory przy wejściu do panelu
+  const showInfo = (title, msg) => setModal({ isOpen: true, title, msg, isConfirm: false });
+  const showConfirm = (title, msg, onConfirm) => setModal({ isOpen: true, title, msg, isConfirm: true, onConfirm });
+  const closeModal = () => setModal({ ...modal, isOpen: false });
+
   useEffect(() => {
     fetch(`${apiUrl}/api/cms`, { credentials: 'include' })
       .then(res => res.ok ? res.json() : null)
       .then(data => { if (data) setConfig(data); });
   }, [apiUrl]);
 
-  // Funkcja obsługująca przesuwanie koloru i podgląd na żywo
   const handleColorChange = (field, value) => {
     setConfig(prev => ({ ...prev, [field]: value }));
-    
-    // Zastosowanie zmian natychmiastowo na stronie
     if (field === 'primaryColor') {
       document.documentElement.style.setProperty('--sunfire-accent', value);
     } else if (field === 'backgroundColor') {
       document.body.style.backgroundColor = value;
-      document.body.style.backgroundImage = 'none'; // Ukrywamy zdjęcie, żeby widzieć kolor
+      document.body.style.backgroundImage = 'none';
     }
   };
 
-  // Zapisz kolory do bazy MongoDB
   const handleSaveConfig = async () => {
     setLoading(true);
     const res = await fetch(`${apiUrl}/api/cms`, {
@@ -43,15 +46,14 @@ export default function Admin() {
     });
 
     if (res.ok) {
-      alert("Zmiany zapisane w MongoDB!");
+      showInfo("ZAPISANO", "Zmiany zostały pomyślnie zapisane w bazie danych.");
     } else {
-      alert("Błąd 401: Twoja sesja wygasła. Zaloguj się ponownie.");
+      showInfo("SESJA WYGASŁA", "Twoja sesja wygasła. Zostaniesz przekierowany do logowania.");
       navigate('/login');
     }
     setLoading(false);
   };
 
-  // Rejestracja nowego administratora
   const handleAddAdmin = async (e) => {
     e.preventDefault();
     const res = await fetch(`${apiUrl}/api/auth/register`, {
@@ -62,16 +64,15 @@ export default function Admin() {
     });
 
     if (res.ok) {
-      alert("Dodano nowego administratora!");
+      showInfo("SUKCES", "Nowy administrator został pomyślnie zarejestrowany.");
       setNewUser({ username: '', password: '' });
     } else {
-      alert("Błąd: Nie masz uprawnień lub użytkownik już istnieje.");
+      showInfo("BŁĄD", "Nie masz uprawnień lub taki użytkownik już istnieje.");
     }
   };
 
-  // Przesyłanie zdjęcia tła do Cloudinary
   const handleUploadBg = async () => {
-    if (!bgFile) return alert("Wybierz plik!");
+    if (!bgFile) return showInfo("BRAK PLIKU", "Wybierz plik graficzny przed wysłaniem.");
     
     setUploading(true);
     const formData = new FormData();
@@ -85,37 +86,56 @@ export default function Admin() {
 
     if (res.ok) {
         const data = await res.json();
-        alert("Zdjęcie tła zaktualizowane!");
+        showInfo("ZAKTUALIZOWANO", "Nowe zdjęcie tła zostało ustawione.");
         document.body.style.backgroundImage = `url(${data.imageUrl})`;
         document.body.style.backgroundSize = "cover";
         document.body.style.backgroundAttachment = "fixed";
     } else {
-        alert("Błąd przesyłania zdjęcia.");
+        showInfo("BŁĄD", "Wystąpił problem podczas przesyłania zdjęcia.");
     }
     setUploading(false);
   };
     
-  // Usuwanie zdjęcia tła
-  const handleRemoveBg = async () => {
-    if (!window.confirm("Czy na pewno chcesz usunąć zdjęcie z tła?")) return;
+  const handleRemoveBg = () => {
+    showConfirm("USUWANIE TŁA", "Czy na pewno chcesz usunąć aktualne zdjęcie tła?", async () => {
+      const res = await fetch(`${apiUrl}/api/cms/remove-bg`, {
+          method: 'DELETE',
+          credentials: 'include'
+      });
 
-    const res = await fetch(`${apiUrl}/api/cms/remove-bg`, {
-        method: 'DELETE',
-        credentials: 'include'
+      if (res.ok) {
+          showInfo("USUNIĘTO", "Zdjęcie tła zostało usunięte.");
+          document.body.style.backgroundImage = "none";
+          document.body.style.backgroundColor = config.backgroundColor;
+      } else {
+          showInfo("BŁĄD", "Błąd podczas usuwania tła z serwera.");
+      }
     });
-
-    if (res.ok) {
-        alert("Zdjęcie usunięte!");
-        document.body.style.backgroundImage = "none";
-        document.body.style.backgroundColor = config.backgroundColor;
-    } else {
-        alert("Błąd podczas usuwania tła.");
-    }
   };
 
   return (
     <div className="admin-wrapper">
       <h1 className="admin-header">Sunfire CMS</h1>
+
+      {/* MODAL SYSTEM (Stylistyka jak w About) */}
+      {modal.isOpen && (
+        <div className="modal-overlay" onClick={closeModal}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <h2 style={modal.isConfirm ? { color: '#ff4444' } : {}}>{modal.title}</h2>
+            <p>{modal.msg}</p>
+            <div className="modal-btns">
+              {modal.isConfirm ? (
+                <>
+                  <button className="btn-delete" onClick={() => { modal.onConfirm(); closeModal(); }}>POTWIERDŹ</button>
+                  <button className="btn-cancel" onClick={closeModal}>ANULUJ</button>
+                </>
+              ) : (
+                <button className="btn-save" onClick={closeModal}>ZROZUMIAŁEM</button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="admin-section">
         <h3>Kolory Strony</h3>
@@ -140,30 +160,26 @@ export default function Admin() {
               onChange={(newColor) => handleColorChange('backgroundColor', newColor)} 
             />
           </div>
-          <button onClick={handleSaveConfig} className="sunfire-btn" style={{ marginTop: '20px', width: '100%' }} disabled={loading}>
-          {loading ? 'Zapisywanie...' : 'ZAPISZ ZMIANY W BAZIE'}
-        </button>
           
+          <button onClick={handleSaveConfig} className="sunfire-btn" style={{ marginTop: '20px', width: '100%' }} disabled={loading}>
+            {loading ? 'ZAPISYWANIE...' : 'ZAPISZ ZMIANY W BAZIE'}
+          </button>
         </div>
 
         <div className="upload-group" style={{ marginTop: '30px' }}>
           <input type="file" onChange={e => setBgFile(e.target.files[0])} accept="image/*" className="admin-input" />
           <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
             <button onClick={handleUploadBg} className="sunfire-btn" disabled={uploading}>
-              {uploading ? "Przesyłanie..." : "USTAW ZDJĘCIE W TLE"}
+              {uploading ? "PRZESYŁANIE..." : "USTAW ZDJĘCIE W TLE"}
             </button>
             <button onClick={handleRemoveBg} className="delete-btn">USUŃ ZDJĘCIE</button>
           </div>
         </div>
-
-        <button onClick={handleSaveConfig} className="sunfire-btn" style={{ marginTop: '20px', width: '100%' }} disabled={loading}>
-          {loading ? 'Zapisywanie...' : 'ZAPISZ ZMIANY W BAZIE'}
-        </button>
       </div>
 
-      <div className="admin-section">
+      <div className="admin-section" style={{ marginTop: '40px' }}>
         <h3>Zarządzanie Administracją</h3>
-        <form onSubmit={handleAddAdmin}>
+        <form onSubmit={handleAddAdmin} className="admin-form">
           <input className="admin-input" type="text" placeholder="Nowy login" value={newUser.username}
                  onChange={e => setNewUser({...newUser, username: e.target.value})} required />
           <input className="admin-input" type="password" placeholder="Hasło" value={newUser.password}

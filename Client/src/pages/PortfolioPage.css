@@ -28,7 +28,6 @@
 
 .admin-badge {
     display: inline-block;
-    /* Używamy color-mix, aby tło badge'a było przezroczystą wersją Twojego koloru */
     background: color-mix(in srgb, var(--sunfire-accent), transparent 90%);
     color: var(--sunfire-accent);
     padding: 5px 15px;
@@ -136,8 +135,8 @@
 }
 
 .delete-slot-btn:hover {
-    background: #fff;
-    color: var(--sunfire-accent);
+    background: #ff0000; /* Twój kolor */
+    color: black;
     transform: rotate(90deg);
 }
 
@@ -196,7 +195,7 @@
     height: 25px;
 }
 
-/* --- MODALE I LIGHTBOX --- */
+/* --- MODALE OGÓLNE --- */
 .modal-overlay, .lightbox-overlay {
     position: fixed;
     top: 0; left: 0;
@@ -208,6 +207,8 @@
     justify-content: center;
     z-index: 2000;
     animation: fadeIn 0.3s ease;
+    padding: 20px;
+    box-sizing: border-box;
 }
 
 .modal-content {
@@ -252,6 +253,144 @@
     box-shadow: 0 5px 15px color-mix(in srgb, var(--sunfire-accent), transparent 70%);
 }
 
+.cancel-btn {
+    margin-top: 20px;
+}
+
+/* Formularz wewnątrz modala admina */
+.modal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.modal-form textarea, .modal-form input {
+    width: 100%;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    box-sizing: border-box;
+}
+
+.modal-form textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+/* --- LIGHTBOX (NOWE STYLE) --- */
+.lightbox-content {
+    position: relative;
+    max-width: 100%;
+    max-height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Zapobiega psuciu układu przy dużym obrazie */
+.lightbox-content img {
+    max-width: 100%;
+    max-height: 90vh; /* Max 90% wysokości ekranu */
+    object-fit: contain;
+    border-radius: 10px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+}
+
+/* Przycisk zamknięcia powiększonego obrazka (Z Twoimi kolorami!) */
+.lightbox-close {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 70px;
+    height: 70px;
+    background: var(--sunfire-accent);
+    border: 1px var(--sunfire-accent);
+    color: #000; /* Czarny krzyżyk dla czytelności */
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    font-weight: 900;
+    z-index: 2010;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
+    transition: all 0.3s ease;
+}
+
+.lightbox-close:hover {
+    background: #e32323; /* Twój własny kolor */
+    color: #fff; /* Skoro tło zmieni się na czerwone, krzyżyk zostaje biały */
+    transform: rotate(180deg);
+    border-color: #e32323; /* Twój własny kolor */
+}
+
+/* --- PRZYCISKI W MODALACH (Spójne z AboutPage) --- */
+.modal-btns {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.modal-btns button {
+    flex: 1;
+    padding: 15px;
+    border: none;
+    font-weight: 900;
+    border-radius: 10px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: 0.3s;
+}
+
+.btn-delete {
+    background: rgba(255, 68, 68, 0.1);
+    color: #ff4444;
+    border: 1px solid #ff4444 !important;
+}
+
+.btn-delete:hover {
+    background: #ff4444;
+    color: #fff;
+}
+
+.btn-cancel {
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.btn-cancel:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.modal-btns button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Reszta przycisków w modalach (zapisywanie, wybór typu itp.) */
+.modal-content button:not(.btn-delete):not(.btn-cancel):not(.lightbox-close) {
+    background: var(--sunfire-accent); 
+    color: #000; 
+    border: none;
+    padding: 10px 20px; 
+    border-radius: 8px; 
+    font-weight: bold; 
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.modal-content button:not(.btn-delete):not(.btn-cancel):not(.lightbox-close):hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px color-mix(in srgb, var(--sunfire-accent), transparent 70%);
+}
+
 /* Animacje */
 @keyframes fadeIn {
     from { opacity: 0; }
@@ -280,5 +419,12 @@
     }
     .slots-grid {
         grid-template-columns: 1fr;
+    }
+    .lightbox-close {
+        top: 15px;
+        right: 15px;
+        width: 50px;
+        height: 50px;
+        font-size: 30px;
     }
 }

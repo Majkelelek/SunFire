@@ -1,9 +1,10 @@
 /* --- GŁÓWNY KONTENER --- */
 .about-container {
     min-height: calc(100vh - 80px);
-    padding: 80px 5%;
-    max-width: 2000px;
-    margin: 0 auto;
+    padding: 80px 3%; 
+    max-width: 1400px; 
+    width: 100%; 
+    margin: 0 auto; 
     color: #fff;
     position: relative;
     font-family: 'Inter', sans-serif;
@@ -200,7 +201,7 @@
     padding: 40px;
     border-radius: 25px;
     width: 90%;
-    max-width: 500px;
+    max-width: 700px; /* Zmienione z 500px - dużo lepsze przy edycji długiego tekstu */
     box-shadow: 0 0 50px color-mix(in srgb, var(--sunfire-accent), transparent 80%);
 }
 
@@ -249,16 +250,57 @@
     border-color: var(--sunfire-accent);
 }
 
-.save-btn {
-    width: 100%;
+.modal-btns {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.modal-btns button {
+    flex: 1;
     padding: 15px;
-    background: var(--sunfire-accent);
     border: none;
-    color: #fff;
     font-weight: 900;
     border-radius: 10px;
     cursor: pointer;
     text-transform: uppercase;
+    transition: 0.3s;
+}
+
+.btn-save {
+    background: var(--sunfire-accent);
+    color: #000;
+}
+
+.btn-save:hover {
+    background: #fff;
+}
+
+.btn-delete {
+    background: rgb(219, 7, 7)!important;
+    color: #ff4444;
+    border: 1px solid #ff4444 !important;
+}
+
+.btn-delete:hover {
+    background: #ff4444;
+    color: #fff;
+}
+
+.btn-cancel {
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.btn-cancel:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.modal-btns button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 /* Styl dla ołówka przy opisie (lead) */
@@ -336,6 +378,8 @@
 .add-section-card:hover span {
     color: var(--sunfire-accent);
 }
+
+
 
 /* --- RESPONSIVE --- */
 @media (max-width: 900px) {

@@ -108,22 +108,22 @@ color: var(--sunfire-accent);
 }
 
 .logout-btn {
-    background: var(--sunfire-accent, #ff4d00);
-    color: white;
-    border: 1px solid var(--sunfire-accent, #ff4d00);
-    padding: 8px 20px;
+    background: transparent;
+    border: 2px solid var(--sunfire-accent);
+    color: var(--sunfire-accent); /* <--- ZMIENIONE Z #000 NA KOLOR AKCENTU */
+    padding: 8px 24px;
     border-radius: 8px;
     font-weight: 800;
-    font-size: 0.75rem;
-    cursor: pointer;
+    font-size: 0.85rem;
     letter-spacing: 1px;
-    transition: 0.3s;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
 .logout-btn:hover {
-    background: var(--sunfire-accent, #ff4d00);
-    color: #fff;
-    box-shadow: 0 0 20px var(--sunfire-accent);
+    background: var(--sunfire-accent);
+    color: #000; /* Tutaj czarny zostaje, bo tło robi się jasne */
+    box-shadow: 0 0 15px color-mix(in srgb, var(--sunfire-accent), transparent 60%);
 }
 
 /* Poświata pod całym navbarem (delikatna) */

@@ -6,7 +6,6 @@
     background: rgba(255, 255, 255, 0.03); /* Glassmorphism */
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
-    /* Dynamiczna krawędź oparta na akcencie */
     border: 1px solid color-mix(in srgb, var(--sunfire-accent), transparent 85%);
     border-radius: 20px;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
@@ -60,7 +59,6 @@
     outline: none;
     border-color: var(--sunfire-accent);
     background: rgba(0, 0, 0, 0.5);
-    /* Poświata przy pisaniu dopasowana do koloru */
     box-shadow: 0 0 15px color-mix(in srgb, var(--sunfire-accent), transparent 80%);
 }
 
@@ -129,10 +127,9 @@
     filter: brightness(1.2);
 }
 
-/* --- PRZYCISK WYSYŁANIA --- */
+/* --- PRZYCISK WYSYŁANIA + STAN ŁADOWANIA --- */
 .sunfire-submit-btn {
     position: relative;
-    /* Gradient od wybranego koloru do jaśniejszej wersji tego samego koloru */
     background: linear-gradient(90deg, var(--sunfire-accent), color-mix(in srgb, var(--sunfire-accent), white 20%));
     color: white;
     padding: 18px;
@@ -146,12 +143,151 @@
     transition: all 0.3s ease;
     margin-top: 10px;
     box-shadow: 0 10px 20px color-mix(in srgb, var(--sunfire-accent), transparent 85%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px; /* Odstęp między tekstem a spinnerem */
+    width: 100%;
 }
 
 .sunfire-submit-btn:hover:not(:disabled) {
     transform: translateY(-3px);
     box-shadow: 0 15px 30px color-mix(in srgb, var(--sunfire-accent), transparent 80%);
-    filter: brightness(1.1); /* Zamiast sztywnego koloru e64500 używamy rozjaśnienia */
+    filter: brightness(1.1);
+}
+
+/* Styl dla zablokowanego przycisku (podczas wysyłania) */
+.sunfire-submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: #333; /* Ciemne tło gdy wyłączony */
+    box-shadow: none;
+}
+
+/* Styl dla spinnera ładowania wewnątrz przycisku */
+.loading-spinner {
+    width: 18px;
+    height: 18px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spinSpinner 0.8s linear infinite;
+    display: inline-block;
+}
+
+@keyframes spinSpinner {
+    to { transform: rotate(360deg); }
+}
+
+/* --- STATUS FORMULARZA (BŁĘDY OGÓLNE) --- */
+.form-status {
+    text-align: center;
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-top: 15px;
+    color: #ff3333; /* Kolor błędu domyślny */
+    opacity: 0.9;
+    animation: fadeInForm 0.3s ease;
+}
+
+/* --- KARTA SUKCESU (Potwierdzenie) --- */
+.success-card {
+    width: 100%;
+    max-width: 600px;
+    margin: 0; /* Marginalizacją zajmuje się wrapper */
+    padding: 60px 40px;
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid color-mix(in srgb, var(--sunfire-accent), transparent 85%);
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    animation: fadeInForm 0.6s ease-out;
+}
+.success-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+    max-width: 300px; /* Ograniczenie szerokości przycisków */
+    margin-top: 10px;
+}
+
+.success-badge {
+    background: var(--sunfire-accent);
+    color: #000;
+    padding: 8px 20px;
+    border-radius: 50px;
+    font-weight: 900;
+    font-size: 0.85rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.success-title {
+    color: white;
+    font-size: 2rem;
+    font-weight: 900;
+    margin: 0;
+    text-transform: uppercase;
+}
+
+.success-text {
+    color: #b0b0b0;
+    line-height: 1.6;
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+}
+
+.success-btn {
+    width: 100%;
+    padding: 14px 25px;
+    border-radius: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+}
+.success-btn.primary {
+    background: var(--sunfire-accent);
+    border: 2px solid var(--sunfire-accent);
+    color: #000;
+}
+.success-btn.primary:hover {
+    filter: brightness(1.2);
+    box-shadow: 0 0 20px color-mix(in srgb, var(--sunfire-accent), transparent 50%);
+    transform: translateY(-2px);
+}
+
+/* Przycisk drugorzędny (Wyślij kolejną) - obramowanie */
+.success-btn.secondary {
+    background: transparent;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.success-btn.secondary:hover {
+    border-color: var(--sunfire-accent);
+    color: var(--sunfire-accent);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.success-btn:hover {
+    background: var(--sunfire-accent);
+    color: #000;
+    box-shadow: 0 0 20px color-mix(in srgb, var(--sunfire-accent), transparent 50%);
+}
+
+@keyframes fadeInForm {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 /* --- MODAL POLITYKI PRYWATNOŚCI --- */
@@ -180,17 +316,16 @@
     box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8);
     display: flex;
     flex-direction: column;
-    overflow: visible; /* Zapobiega ucinaniu poświaty przycisku X */
+    overflow: auto;
 }
 
 .modal-scroll-area h2 {
-    color: var(--sunfire-accent); /* Zmieniono z --primary na --sunfire-accent dla pewności */
+    color: var(--sunfire-accent);
     margin-bottom: 25px;
     font-size: 1.8rem;
     text-align: left;
 }
 
-/* Specjalny box dla Cookies */
 .modal-cookie-box {
     background: color-mix(in srgb, var(--sunfire-accent), transparent 97%);
     padding: 25px;
@@ -199,11 +334,6 @@
     margin-top: 40px;
 }
 
-.modal-cookie-box h3 {
-    color: #fff;
-}
-
-/* Przycisk zamknięcia (X) */
 .close-modal {
     position: absolute;
     top: 20px;
@@ -218,7 +348,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: 0.3s !important;
     z-index: 10;
 }
 
@@ -227,31 +356,25 @@
     color: #000 !important;
     transform: rotate(90deg);
 }
-/* --- OBSŁUGA BŁĘDÓW (Bardziej widoczna) --- */
 
-/* Ramka wokół błędnego pola */
+/* --- BŁĘDY --- */
 .error-border {
-    border-color: #ff3333 !important; /* Bardziej nasycona czerwień */
-    background: rgba(255, 0, 0, 0.07) !important; /* Delikatne czerwone tło wewnątrz pola */
-    box-shadow: 0 0 10px rgba(255, 51, 51, 0.2);
+    border-color: #ff3333 !important;
+    background: rgba(255, 0, 0, 0.07) !important;
 }
 
-/* Napis pod polem */
 .error-msg {
-    color: #ff3333; /* Żywa czerwień */
+    color: #ff3333;
     font-size: 0.85rem;
-    font-weight: 800; /* Mocne pogrubienie */
+    font-weight: 800;
     margin-top: 5px;
-    margin-bottom: 5px;
     display: flex;
     align-items: center;
     gap: 6px;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    animation: shakeError 0.4s ease-in-out; /* Delikatne potrząśnięcie przy pojawieniu się */
+    animation: shakeError 0.4s ease-in-out;
 }
 
-/* Dodanie ikony wykrzyknika przed tekstem błędu */
 .error-msg::before {
     content: "!";
     display: inline-flex;
@@ -266,21 +389,25 @@
     font-weight: 900;
 }
 
-/* Animacja potrząsania, żeby użytkownik od razu zauważył błąd */
+.success-page-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Zajmuje całą wysokość widoku minus około 200px na nawigację i stopkę */
+    min-height: calc(100vh - 200px); 
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
 @keyframes shakeError {
     0%, 100% { transform: translateX(0); }
     25% { transform: translateX(-5px); }
     75% { transform: translateX(5px); }
 }
 
-/* Opcjonalnie: zmiana koloru znaku wodnego (placeholder) w błędnym polu */
-.error-border::placeholder {
-    color: rgba(255, 51, 51, 0.4);
-}
-
-/* Responsywność */
 @media (max-width: 768px) {
-    .survey-form {
+    .survey-form, .success-card {
         margin: 20px auto;
         padding: 25px;
         width: 92%;

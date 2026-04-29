@@ -6,13 +6,16 @@ export default function AboutPage({ isAdmin }) {
     const [loading, setLoading] = useState(true);
     const apiUrl = import.meta.env.VITE_API_URL || "";
     
-    // Modal State
+    // Modal State - Edycja
     const [editingItem, setEditingItem] = useState(null); 
     const [tempTitle, setTempTitle] = useState('');
     const [tempAccent, setTempAccent] = useState('');
     const [tempContent, setTempContent] = useState('');
     const [tempSize, setTempSize] = useState('half');
     const [isSaving, setIsSaving] = useState(false);
+
+    // Modal State - Usuwanie
+    const [deletingId, setDeletingId] = useState(null);
 
     const fetchData = async () => {
         try {
@@ -52,10 +55,17 @@ export default function AboutPage({ isAdmin }) {
         await sendUpdate(updatedData);
     };
 
-    const deleteSection = async (id) => {
-        if (!window.confirm("Usunąć tę sekcję?")) return;
-        const updatedData = { ...data, sections: data.sections.filter(s => s.id !== id) };
+    // Otwiera modal usuwania zamiast window.confirm
+    const deleteSection = (id) => {
+        setDeletingId(id);
+    };
+
+    // Właściwe usunięcie i wysłanie do API
+    const confirmDelete = async () => {
+        setIsSaving(true);
+        const updatedData = { ...data, sections: data.sections.filter(s => s.id !== deletingId) };
         await sendUpdate(updatedData);
+        setDeletingId(null);
     };
 
     const sendUpdate = async (updatedData) => {
@@ -173,6 +183,24 @@ export default function AboutPage({ isAdmin }) {
                                 {isSaving ? "ZAPISYWANIE..." : "ZAPISZ ZMIANY"}
                             </button>
                             <button className="btn-cancel" onClick={() => setEditingItem(null)}>ANULUJ</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* MODAL POTWIERDZENIA USUNIĘCIA */}
+            {deletingId && (
+                <div className="modal-overlay" onClick={() => setDeletingId(null)}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                        <h2 style={{ color: '#ff4444' }}>POTWIERDŹ USUNIĘCIE</h2>
+                        <p style={{ color: 'rgba(255, 255, 255, 0.7)', marginBottom: '30px', fontSize: '1.1rem' }}>
+                            Czy na pewno chcesz bezpowrotnie usunąć tę sekcję?
+                        </p>
+                        <div className="modal-btns">
+                            <button className="btn-delete" onClick={confirmDelete} disabled={isSaving}>
+                                {isSaving ? "USUWAM..." : "USUŃ"}
+                            </button>
+                            <button className="btn-cancel" onClick={() => setDeletingId(null)}>ANULUJ</button>
                         </div>
                     </div>
                 </div>

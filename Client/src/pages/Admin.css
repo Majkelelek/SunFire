@@ -5,14 +5,14 @@
   margin: 40px auto;
   padding: 0 20px;
   color: #fff;
-  font-family: 'Inter', sans-serif; /* Zakładając, że masz coś podobnego */
+  font-family: 'Inter', sans-serif;
 }
 
 .admin-header {
   font-size: 2.5rem;
   margin-bottom: 30px;
   text-align: center;
-  color: var(--sunfire-accent, var(--sunfire-accent, #ff4d00));
+  color: var(--sunfire-accent, #ff4d00);
 }
 
 /* Status Powiadomień */
@@ -156,7 +156,7 @@
 
 .file-input-label:hover {
   background: rgba(255, 255, 255, 0.1);
-  border-color: var(--sunfire-accent, var(--sunfire-accent, #ff4d00));
+  border-color: var(--sunfire-accent, #ff4d00);
 }
 
 .file-input-label input[type="file"] {
@@ -201,13 +201,13 @@
 }
 
 .admin-input:focus {
-  border-color: var(--sunfire-accent, var(--sunfire-accent, #ff4d00));
+  border-color: var(--sunfire-accent, #ff4d00);
   box-shadow: 0 0 8px rgba(255, 77, 0, 0.3);
 }
 
 /* Przyciski */
 .sunfire-btn {
-  background: var(--sunfire-accent, var(--sunfire-accent, #ff4d00));
+  background: var(--sunfire-accent, #ff4d00);
   color: white;
   border: none;
   padding: 12px 20px;
@@ -248,4 +248,172 @@
 .delete-btn:hover {
   background: #ff4757;
   color: white;
+}
+
+/* Admin.css */
+
+/* ... (zachowujemy istniejące style dla .admin-wrapper, .admin-card itp.) ... */
+
+/* --- MODALE (Stylistyka przeniesiona z AboutPage) --- */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(10px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.modal-content {
+  background: #0f0f0f;
+  border: 1px solid var(--sunfire-accent, #ff4d00);
+  padding: 40px;
+  border-radius: 25px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 0 50px color-mix(in srgb, var(--sunfire-accent, #ff4d00), transparent 80%);
+  text-align: center;
+}
+
+.modal-content h2 {
+  color: var(--sunfire-accent, #ff4d00);
+  text-transform: uppercase;
+  margin-bottom: 25px;
+  font-size: 1.5rem;
+  letter-spacing: 2px;
+}
+
+.modal-content p {
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 30px;
+  font-size: 1.1rem;
+  line-height: 1.5;
+}
+
+/* Przyciski w modalu */
+.modal-btns {
+  display: flex;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.modal-btns button {
+  flex: 1;
+  padding: 15px;
+  border: none;
+  font-weight: 900;
+  border-radius: 10px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: 0.3s;
+}
+
+.btn-save {
+  background: var(--sunfire-accent, #ff4d00);
+  color: #000;
+}
+
+.btn-save:hover {
+  background: #fff;
+}
+
+.btn-cancel {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.btn-delete {
+  background: #db0707 !important;
+  color: #fff;
+  border: 1px solid #ff4444 !important;
+}
+
+.btn-delete:hover {
+  background: #ff4444 !important;
+}
+
+/* --- NOWOCZESNE INPUTY (Styl About) --- */
+.admin-input {
+  width: 100%;
+  padding: 15px 20px;
+  background: rgba(255, 255, 255, 0.03); /* Bardzo delikatne tło */
+  border: 1px solid rgba(255, 255, 255, 0.1); /* Subtelna ramka */
+  border-radius: 12px; /* Zaokrąglone rogi pasujące do About */
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  outline: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
+}
+
+/* Efekt najechania */
+.admin-input:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Efekt focus (aktywne pole) - tutaj dodajemy charakterystyczny glow */
+.admin-input:focus {
+  background: rgba(0, 0, 0, 0.4);
+  border-color: var(--sunfire-accent, #ff4d00);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--sunfire-accent, #ff4d00), transparent 85%);
+  transform: translateY(-1px);
+}
+
+/* Styl dla etykiet (labels) nad inputami */
+.admin-section h3 {
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--sunfire-accent, #ff4d00);
+  margin-bottom: 25px;
+}
+
+/* Poprawka dla kontenera formularza */
+.admin-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* Większe odstępy */
+  background: rgba(255, 255, 255, 0.02);
+  padding: 30px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Stylizacja specjalna dla uploadu pliku */
+.admin-input[type="file"] {
+  padding: 12px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.admin-input[type="file"]::file-selector-button {
+  background: var(--sunfire-accent);
+  border: none;
+  border-radius: 6px;
+  padding: 5px 15px;
+  margin-right: 15px;
+  color: #000;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.admin-input[type="file"]::file-selector-button:hover {
+  background: #fff;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

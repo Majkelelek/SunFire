@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import './PortfolioPage.css';
 
-// Przyjmujemy isAdmin jako prop z App.jsx
 const PortfolioPage = ({ isAdmin }) => {
     const [projects, setProjects] = useState([]);
     const [loading, setLoading] = useState(true);
     const apiUrl = import.meta.env.VITE_API_URL || "";
+    
+    // Stany dla modali
     const [expandedProject, setExpandedProject] = useState(null);
     const [editingSlot, setEditingSlot] = useState(null);
-    const [modalStep, setModalStep] = useState('choose');
+    const [projectToDelete, setProjectToDelete] = useState(null); // NOWE: do modala usuwania
     
+    const [modalStep, setModalStep] = useState('choose');
     const [textInput, setTextInput] = useState('');
     const [fileInput, setFileInput] = useState(null);
     const [uploading, setUploading] = useState(false);
@@ -20,7 +22,7 @@ const PortfolioPage = ({ isAdmin }) => {
             const data = await res.json();
             setProjects(data);
         } catch (err) {
-            console.error("Błąd ładowania projektów:");
+            console.error("Błąd ładowania projektów");
         } finally {
             setLoading(false);
         }
@@ -30,28 +32,25 @@ const PortfolioPage = ({ isAdmin }) => {
         fetchData();
     }, []);
 
-    // 2. Logika dynamicznej liczby slotów - teraz isAdmin jest widoczne, bo przychodzi z góry
     const getSlotsCount = () => {
         const slotNumbers = projects
             .map(p => parseInt(p.slotNumber, 10))
             .filter(n => !isNaN(n));
-
         const maxSlot = slotNumbers.length > 0 ? Math.max(...slotNumbers) : -1;
-
         let count = 8; 
         if (isAdmin) {
             count = Math.max(8, (Math.floor(maxSlot / 4) + 2) * 4);
         } else {
             count = (Math.floor(maxSlot / 4) + 1) * 4;
         }
-        return isNaN(count) || count < 0 ? 8 : count;
+        return count;
     };
 
     const slotsCount = getSlotsCount();
 
-    // --- LOGIKA DODAWANIA (bez zmian) ---
+    // --- LOGIKA DODAWANIA ---
     const handleAddText = async () => {
-        if (!textInput.trim()) return alert("Wpisz tekst!");
+        if (!textInput.trim()) return;
         setUploading(true);
         const newProject = {
             type: 'text',
@@ -66,11 +65,11 @@ const PortfolioPage = ({ isAdmin }) => {
             credentials: 'include'
         });
         if (res.ok) { resetModal(); fetchData(); }
-        else { setUploading(false); alert("Błąd zapisu"); }
+        else { setUploading(false); }
     };
 
     const handleAddImage = async () => {
-        if (!fileInput) return alert("Wybierz plik!");
+        if (!fileInput) return;
         setUploading(true);
         const formData = new FormData();
         formData.append('file', fileInput);
@@ -92,18 +91,34 @@ const PortfolioPage = ({ isAdmin }) => {
                 credentials: 'include'
             });
             resetModal(); fetchData();
-        } catch (err) { alert("Błąd wysyłania"); }
+        } catch (err) { console.error("Błąd uploadu"); }
         finally { setUploading(false); }
     };
 
-    const handleDelete = async (id) => {
-        if (!window.confirm("Usunąć ten element?")) return;
-        await fetch(`${apiUrl}/api/projects/${id}`, { method: 'DELETE', credentials: 'include' });
-        fetchData();
+    // --- NOWA LOGIKA USUWANIA ---
+    const confirmDelete = async () => {
+        if (!projectToDelete) return;
+        setUploading(true);
+        try {
+            await fetch(`${apiUrl}/api/projects/${projectToDelete}`, { 
+                method: 'DELETE', 
+                credentials: 'include' 
+            });
+            setProjectToDelete(null);
+            fetchData();
+        } catch (err) {
+            console.error("Błąd usuwania");
+        } finally {
+            setUploading(false);
+        }
     };
 
     const resetModal = () => {
-        setEditingSlot(null); setModalStep('choose'); setTextInput(''); setFileInput(null); setUploading(false);
+        setEditingSlot(null); 
+        setModalStep('choose'); 
+        setTextInput(''); 
+        setFileInput(null); 
+        setUploading(false);
     };
 
     if (loading) return <div className="loading">Wczytywanie...</div>;
@@ -125,28 +140,24 @@ const PortfolioPage = ({ isAdmin }) => {
                             key={index} 
                             className={`slot ${!project ? 'empty' : 'filled'}`}
                             onClick={() => {
-                                const pType = project?.type || project?.Type;
-                                if (project && pType === 'image') {
+                                if (project && (project.type === 'image' || project.Type === 'image')) {
                                     setExpandedProject(project); 
                                 } else if (isAdmin && !project) {
                                     setEditingSlot(index); 
                                 }
                             }}
-                            style={{ cursor: (project?.type || project?.Type) === 'text' ? 'default' : 'pointer' }}
                         >
                             {project ? (
                                 <div className="project-content">
                                     {(project.type === 'text' || project.Type === 'text') ? (
-                                        <div className="text-box">
-                                            {project.content || project.Content || "Brak treści"}
-                                        </div>
+                                        <div className="text-box">{project.content || project.Content}</div>
                                     ) : (
                                         <img src={project.imageUrl || project.ImageUrl} alt="Projekt" />
                                     )}
                                     {isAdmin && (
                                         <button className="delete-slot-btn" onClick={(e) => {
                                             e.stopPropagation();
-                                            handleDelete(project.id || project.Id);
+                                            setProjectToDelete(project.id || project.Id); // Otwiera modal zamiast alertu
                                         }}>×</button>
                                     )}
                                 </div>
@@ -164,21 +175,40 @@ const PortfolioPage = ({ isAdmin }) => {
                 })}
             </div>
 
-            {/* LIGHTBOX */}
+            {/* LIGHTBOX (Powiększony obraz) */}
             {expandedProject && (
                 <div className="lightbox-overlay" onClick={() => setExpandedProject(null)}>
+                    {/* Ten przycisk jest teraz duży i jaskrawy dzięki CSS */}
+                    <button className="lightbox-close" onClick={() => setExpandedProject(null)}>×</button>
                     <div className="lightbox-content" onClick={e => e.stopPropagation()}>
-                        <button className="lightbox-close" onClick={() => setExpandedProject(null)}>×</button>
                         <img src={expandedProject.imageUrl || expandedProject.ImageUrl} alt="Powiększony" />
                     </div>
                 </div>
             )}
 
-            {/* MODAL ADMINA */}
+            {/* MODAL USUWANIA (NOWOŚĆ) */}
+            {projectToDelete && (
+                <div className="modal-overlay" onClick={() => setProjectToDelete(null)}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                        <h2 style={{ color: '#ff4444' }}>POTWIERDŹ USUNIĘCIE</h2>
+                        <p style={{ color: 'rgba(255, 255, 255, 0.7)', marginBottom: '30px', fontSize: '1.1rem' }}>
+                            Czy na pewno chcesz bezpowrotnie usunąć ten element ze swojego portfolio?
+                        </p>
+                        <div className="modal-btns">
+                            <button className="btn-delete" onClick={confirmDelete} disabled={uploading}>
+                                {uploading ? "USUWAM..." : "USUŃ TRWALE"}
+                            </button>
+                            <button className="btn-cancel" onClick={() => setProjectToDelete(null)}>ANULUJ</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* MODAL DODAWANIA PROJEKTU */}
             {editingSlot !== null && (
                 <div className="modal-overlay" onClick={resetModal}>
                     <div className="modal-content" onClick={e => e.stopPropagation()}>
-                        <h2>Slot #{editingSlot + 1}</h2>
+                        <h2>Dodaj do slotu #{editingSlot + 1}</h2>
                         {modalStep === 'choose' && (
                             <div className="modal-options">
                                 <button onClick={() => setModalStep('image')}>🖼️ Obraz</button>
@@ -187,7 +217,7 @@ const PortfolioPage = ({ isAdmin }) => {
                         )}
                         {modalStep === 'text' && (
                             <div className="modal-form">
-                                <textarea value={textInput} onChange={e => setTextInput(e.target.value)} />
+                                <textarea value={textInput} onChange={e => setTextInput(e.target.value)} placeholder="Wpisz treść..."/>
                                 <button onClick={handleAddText} disabled={uploading}>Zapisz</button>
                             </div>
                         )}
@@ -197,7 +227,7 @@ const PortfolioPage = ({ isAdmin }) => {
                                 <button onClick={handleAddImage} disabled={uploading}>Wyślij</button>
                             </div>
                         )}
-                        <button onClick={resetModal}>Anuluj</button>
+                        <button className="cancel-btn" onClick={resetModal}>Anuluj</button>
                     </div>
                 </div>
             )}
