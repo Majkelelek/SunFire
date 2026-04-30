@@ -1,7 +1,7 @@
 .main-footer {
     width: 100%;
     padding: 15px 0; 
-    background: color-mix(in srgb, var(--sunfire-accent), transparent 95%);
+    background: color-mix(in srgb, var(--sunfire-accent), transparent 99%);
     border-top: 1px solid color-mix(in srgb, var(--sunfire-accent), transparent 90%);
     backdrop-filter: blur(10px);
     height: auto;

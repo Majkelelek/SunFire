@@ -2,7 +2,7 @@
     position: sticky;
     top: 0;
     z-index: 1000;
-    background: color-mix(in srgb, var(--sunfire-accent), transparent 96%);
+    background: color-mix(in srgb, var(--sunfire-accent), transparent 99%);
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
     border-bottom: 0px solid color-mix(in srgb, var(--sunfire-accent), transparent 90%);

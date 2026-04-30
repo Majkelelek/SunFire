@@ -10,6 +10,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import AboutPage from './pages/AboutPage';
 import Footer from './components/Footer';
 import LegalInfo from './pages/LegalInfo';
+import ScrollToTop from './components/ScrollToTop'; // IMPORT SCROLL FIX
 
 // Style
 import './App.css'; 
@@ -20,7 +21,6 @@ function App() {
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const apiUrl = import.meta.env.VITE_API_URL || "";
 
-  // 1. Sprawdzanie autoryzacji
   const checkAuth = useCallback(async () => {
     try {
       const res = await fetch(`${apiUrl}/api/auth/check`, { credentials: 'include' });
@@ -32,19 +32,14 @@ function App() {
     }
   }, [apiUrl]);
 
-  // 2. Pobieranie konfiguracji wyglądu
   const fetchSiteConfig = useCallback(async () => {
     try {
       const res = await fetch(`${apiUrl}/api/cms`);
       if (res.ok) {
         const config = await res.json();
-        
-        // Ustawianie koloru akcentu
         if (config.primaryColor) {
           document.documentElement.style.setProperty('--sunfire-accent', config.primaryColor);
         }
-
-        // Ustawianie tła (obrazek lub kolor)
         if (config.backgroundImageUrl) {
           document.body.style.backgroundImage = `url(${config.backgroundImageUrl})`;
           document.body.style.backgroundSize = "cover";
@@ -62,25 +57,14 @@ function App() {
     }
   }, [apiUrl]);
 
-  // INICJALIZACJA APLIKACJI
   useEffect(() => {
     const initApp = async () => {
-      // Wykonujemy oba żądania równolegle, żeby było szybciej
-      await Promise.all([
-        checkAuth(),
-        fetchSiteConfig()
-      ]);
-
-      // Dodajemy małe sztuczne opóźnienie (300ms), żeby przejście było płynne
-      setTimeout(() => {
-        setIsInitialLoading(false);
-      }, 300);
+      await Promise.all([checkAuth(), fetchSiteConfig()]);
+      setTimeout(() => { setIsInitialLoading(false); }, 300);
     };
-
     initApp();
   }, [checkAuth, fetchSiteConfig]);
 
-  // EKRAN ŁADOWANIA (Ukrywa błyski kolorów i weryfikację)
   if (isInitialLoading) {
     return (
       <div className="sunfire-loader-overlay">
@@ -94,25 +78,16 @@ function App() {
 
   return (
     <Router>
+      <ScrollToTop /> {/* SCROLL FIX UMIESZCZONY W ROUTERZE */}
       <Navbar isAdmin={isAdmin} setIsAdmin={setIsAdmin} />
       
       <main className="content-wrapper">
         <Routes>
           <Route path="/" element={<Home isAdmin={isAdmin} />} />
           <Route path="/contact" element={<ContactPage />} />
-          <Route 
-            path="/login" 
-            element={<Login setIsAdmin={setIsAdmin} checkAuth={checkAuth} />} 
-          />
+          <Route path="/login" element={<Login setIsAdmin={setIsAdmin} checkAuth={checkAuth} />} />
           <Route path="/about" element={<AboutPage isAdmin={isAdmin} />} />
-          <Route 
-            path="/admin" 
-            element={
-              <ProtectedRoute isAdmin={isAdmin}>
-                <Admin />
-              </ProtectedRoute>
-            } 
-          />
+          <Route path="/admin" element={<ProtectedRoute isAdmin={isAdmin}><Admin /></ProtectedRoute>} />
           <Route path="/polityka-prywatnosci" element={<LegalInfo />} />
           <Route path="/portfolio" element={<PortfolioPage isAdmin={isAdmin} />} />
         </Routes>

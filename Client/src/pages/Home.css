@@ -176,10 +176,11 @@
     padding: 20px;
     transition: 0.3s;
     border-radius: 20px;
+    /* DODAJ TE LINIE: */
 }
 
 .editable-wrapper:hover {
-    background: rgba(255, 255, 255, 0.03);
+  background: transparent;
 }
 
 .admin-main-edit {

@@ -1,8 +1,31 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const LegalInfo = () => {
     return (
-        <div className="container" style={{ paddingTop: '120px', paddingBottom: '80px' }}>
+        <div className="container" style={{ paddingTop: '20px', paddingBottom: '80px' }}>
+            
+            {/* Przycisk powrotu */}
+            <div style={{ maxWidth: '900px', margin: '0 auto 30px auto' }}>
+                <Link to="/" style={{ 
+                    color: '#fff', 
+                    textDecoration: 'none', 
+                    fontSize: '0.8rem', 
+                    fontWeight: '800', 
+                    letterSpacing: '2px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    opacity: '0.5',
+                    transition: '0.3s'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+                onMouseLeave={(e) => e.currentTarget.style.opacity = '0.5'}
+                >
+                    <span style={{ fontSize: '1.2rem', color: 'var(--primary)' }}>←</span> WSTECZ
+                </Link>
+            </div>
+
             <div className="privacy-card" style={{ 
                 background: 'rgba(255, 255, 255, 0.02)', 
                 padding: '50px', 
