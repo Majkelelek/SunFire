@@ -2,7 +2,7 @@
 
 /* --- KONTENER GŁÓWNY --- */
 .portfolio-container {
-    padding: 60px 5%;
+    padding: 50px 5%;
     max-width: 1400px;
     margin: 0 auto;
     min-height: 100vh;
@@ -409,17 +409,49 @@
     animation: pulseGlow 2s infinite;
 }
 
-/* Responsywność */
+/* --- RESPONSYWNOŚĆ (Ekrany do 768px) --- */
 @media (max-width: 768px) {
     .portfolio-container {
         padding: 40px 20px;
     }
+
     .portfolio-header h1 {
         font-size: 2.2rem;
     }
+
     .slots-grid {
         grid-template-columns: 1fr;
+        gap: 20px;
     }
+
+    /* FIX DLA ADMINA: Przycisk usuwania zawsze widoczny na mobile */
+    .delete-slot-btn {
+        opacity: 1 !important;
+        width: 45px;
+        height: 45px;
+        top: 10px;
+        right: 10px;
+        font-size: 24px;
+        background: rgba(255, 68, 68, 0.9);
+    }
+
+    /* Wyłączamy unoszenie się slotów na dotyku, aby nie blokowało kliknięć */
+    .slot:hover {
+        transform: none !important;
+    }
+
+    /* Styl dla pustych slotów w trybie edycji na telefonie */
+    .slot.empty .corner {
+        width: 20px;
+        height: 20px;
+        border-color: var(--sunfire-accent);
+    }
+
+    .target-icon .plus {
+        font-size: 30px;
+    }
+
+    /* Zamknięcie Lightboxa */
     .lightbox-close {
         top: 15px;
         right: 15px;
