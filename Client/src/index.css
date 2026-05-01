@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* --- RESET I PODSTAWY --- */
 * {
   margin: 0;
@@ -11,6 +15,16 @@
   --theme-accent: #ff8c00;
   --theme-bg-image: none;
   --sunfire-accent: #ff4d00; /* Domyślny pomarańczowy */
+  
+  --primary: var(--sunfire-accent);
+  --primary-glow: color-mix(in srgb, var(--sunfire-accent), transparent 60%);
+  
+  --dark-bg: #050505;
+  --card-bg: #111111;
+  --input-bg: #1a1a1a;
+  --text-main: #ffffff;
+  --text-dim: #888888;
+  --nav-height: 80px;
 }
 
 /* Wymuszamy pełną wysokość dokumentu */
@@ -95,4 +109,31 @@ html, body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #fff; /* Kolor po najechaniu myszką */
+}
+
+@keyframes shakeError {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+@keyframes fadeInForm {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulseGlow {
+    0% { box-shadow: 0 0 5px color-mix(in srgb, var(--sunfire-accent), transparent 80%); }
+    50% { box-shadow: 0 0 20px color-mix(in srgb, var(--sunfire-accent), transparent 50%); }
+    100% { box-shadow: 0 0 5px color-mix(in srgb, var(--sunfire-accent), transparent 80%); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes fadeInScale {
+    from { opacity: 0; transform: scale(0.95) translateY(20px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
 }

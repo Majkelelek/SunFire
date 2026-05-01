@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { HexColorPicker } from "react-colorful";
-import './Admin.css';
 
 export default function Admin() {
   const navigate = useNavigate();
@@ -11,7 +10,6 @@ export default function Admin() {
   const [bgFile, setBgFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   
-  // State dla modala (analogicznie do AboutPage)
   const [modal, setModal] = useState({ isOpen: false, title: '', msg: '', isConfirm: false, onConfirm: null });
 
   const apiUrl = import.meta.env.VITE_API_URL || "";
@@ -113,36 +111,41 @@ export default function Admin() {
     });
   };
 
-  return (
-    <div className="admin-wrapper">
-      <h1 className="admin-header">Sunfire CMS</h1>
+  const inputClasses = "w-full p-[15px_20px] bg-white/[0.03] border border-white/10 rounded-[12px] text-white font-sans text-[1rem] outline-none transition-all duration-[300ms] ease-[cubic-bezier(0.4,0,0.2,1)] box-border hover:bg-white/[0.05] hover:border-white/20 focus:bg-black/40 focus:border-sunfire focus:shadow-[0_0_20px_color-mix(in_srgb,var(--sunfire-accent),transparent_85%)] focus:-translate-y-[1px]";
+  const fileInputClasses = `${inputClasses} cursor-pointer text-[0.9rem] file:bg-sunfire file:border-none file:rounded-[6px] file:p-[5px_15px] file:mr-[15px] file:text-black file:font-bold file:cursor-pointer file:transition file:duration-300 hover:file:bg-white`;
+  const sunfireBtnClasses = "bg-transparent text-white border-2 border-sunfire p-[12px_20px] rounded-[8px] font-bold cursor-pointer transition duration-300 uppercase text-[0.9rem] hover:not(:disabled):opacity-90 hover:not(:disabled):-translate-y-[2px] disabled:bg-[#555] disabled:cursor-not-allowed disabled:opacity-70 disabled:border-transparent";
+  const deleteBtnClasses = "bg-transparent text-[#ff4757] border border-[#ff4757] p-[12px_20px] rounded-[8px] font-bold cursor-pointer transition duration-300 uppercase text-[0.9rem] hover:bg-[#ff4757] hover:text-white";
 
-      {/* MODAL SYSTEM (Stylistyka jak w About) */}
+  return (
+    <div className="max-w-[1000px] mx-auto p-[40px_20px] text-white font-sans">
+      <h1 className="text-[2.5rem] mb-[30px] text-center text-sunfire font-black uppercase">Sunfire CMS</h1>
+
+      {/* MODAL SYSTEM */}
       {modal.isOpen && (
-        <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <h2 style={modal.isConfirm ? { color: '#ff4444' } : {}}>{modal.title}</h2>
-            <p>{modal.msg}</p>
-            <div className="modal-btns">
+        <div className="fixed inset-0 w-full h-full bg-black/85 backdrop-blur-[10px] flex justify-center items-center z-[1000] animate-[fadeIn_0.3s_ease-out]" onClick={closeModal}>
+          <div className="bg-[#0f0f0f] border border-sunfire p-[40px] rounded-[25px] w-[90%] max-w-[500px] text-center shadow-[0_0_50px_color-mix(in_srgb,var(--sunfire-accent),transparent_80%)]" onClick={e => e.stopPropagation()}>
+            <h2 className={`text-sunfire uppercase mb-[25px] text-[1.5rem] tracking-[2px] ${modal.isConfirm ? '!text-[#ff4444]' : ''}`}>{modal.title}</h2>
+            <p className="text-white/70 mb-[30px] text-[1.1rem] leading-[1.5]">{modal.msg}</p>
+            <div className="flex gap-[15px] mt-[20px]">
               {modal.isConfirm ? (
                 <>
-                  <button className="btn-delete" onClick={() => { modal.onConfirm(); closeModal(); }}>POTWIERDŹ</button>
-                  <button className="btn-cancel" onClick={closeModal}>ANULUJ</button>
+                  <button className="flex-1 p-[15px] border border-[#ff4444] font-black rounded-[10px] cursor-pointer uppercase transition duration-300 !bg-[#db0707] text-[#ff4444] hover:!bg-[#ff4444] hover:!text-white" onClick={() => { modal.onConfirm(); closeModal(); }}>POTWIERDŹ</button>
+                  <button className="flex-1 p-[15px] border border-white/10 font-black rounded-[10px] cursor-pointer uppercase transition duration-300 bg-white/5 text-white hover:bg-white/10 hover:border-white/30" onClick={closeModal}>ANULUJ</button>
                 </>
               ) : (
-                <button className="btn-save" onClick={closeModal}>ZROZUMIAŁEM</button>
+                <button className="flex-1 p-[15px] border-none font-black rounded-[10px] cursor-pointer uppercase transition duration-300 bg-sunfire text-black hover:bg-white" onClick={closeModal}>ZROZUMIAŁEM</button>
               )}
             </div>
           </div>
         </div>
       )}
 
-      <div className="admin-section">
-        <h3>Kolory Strony</h3>
-        <div className="color-inputs" style={{ display: 'flex', gap: '40px', flexWrap: 'wrap', marginBottom: '20px' }}>
+      <div className="mt-[40px]">
+        <h3 className="text-[1.2rem] uppercase tracking-[2px] text-sunfire mb-[25px]">Kolory Strony</h3>
+        <div className="flex gap-[40px] flex-wrap mb-[20px]">
           
-          <div className="color-field">
-            <label style={{ display: 'block', marginBottom: '10px', fontWeight: 'bold' }}>
+          <div className="flex-1 flex flex-col gap-[8px]">
+            <label className="text-[0.9rem] text-[#ccc] block mb-[10px] font-bold">
               Akcent: <span style={{ color: config.primaryColor }}>{config.primaryColor}</span>
             </label>
             <HexColorPicker 
@@ -151,9 +154,9 @@ export default function Admin() {
             />
           </div>
           
-          <div className="color-field">
-            <label style={{ display: 'block', marginBottom: '10px', fontWeight: 'bold' }}>
-              Tło: <span style={{ color: config.primaryColor }}>{config.backgroundColor}</span>
+          <div className="flex-1 flex flex-col gap-[8px]">
+            <label className="text-[0.9rem] text-[#ccc] block mb-[10px] font-bold">
+              Tło: <span style={{ color: config.backgroundColor }}>{config.backgroundColor}</span>
             </label>
             <HexColorPicker 
               color={config.backgroundColor} 
@@ -161,30 +164,30 @@ export default function Admin() {
             />
           </div>
           
-          <button onClick={handleSaveConfig} className="sunfire-btn" style={{ marginTop: '20px', width: '100%' }} disabled={loading}>
+          <button onClick={handleSaveConfig} className={`${sunfireBtnClasses} w-full mt-[20px]`} disabled={loading}>
             {loading ? 'ZAPISYWANIE...' : 'ZAPISZ ZMIANY W BAZIE'}
           </button>
         </div>
 
-        <div className="upload-group" style={{ marginTop: '30px' }}>
-          <input type="file" onChange={e => setBgFile(e.target.files[0])} accept="image/*" className="admin-input" />
-          <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-            <button onClick={handleUploadBg} className="sunfire-btn" disabled={uploading}>
+        <div className="flex flex-col gap-[15px] mt-[30px]">
+          <input type="file" onChange={e => setBgFile(e.target.files[0])} accept="image/*" className={fileInputClasses} />
+          <div className="flex gap-[10px] mt-[10px]">
+            <button onClick={handleUploadBg} className={`${sunfireBtnClasses} flex-1`} disabled={uploading}>
               {uploading ? "PRZESYŁANIE..." : "USTAW ZDJĘCIE W TLE"}
             </button>
-            <button onClick={handleRemoveBg} className="delete-btn">USUŃ ZDJĘCIE</button>
+            <button onClick={handleRemoveBg} className={`${deleteBtnClasses} flex-1`}>USUŃ ZDJĘCIE</button>
           </div>
         </div>
       </div>
 
-      <div className="admin-section" style={{ marginTop: '40px' }}>
-        <h3>Zarządzanie Administracją</h3>
-        <form onSubmit={handleAddAdmin} className="admin-form">
-          <input className="admin-input" type="text" placeholder="Nowy login" value={newUser.username}
+      <div className="mt-[40px]">
+        <h3 className="text-[1.2rem] uppercase tracking-[2px] text-sunfire mb-[25px]">Zarządzanie Administracją</h3>
+        <form onSubmit={handleAddAdmin} className="flex flex-col gap-[20px] bg-white/[0.02] p-[30px] rounded-[20px] border border-white/5">
+          <input className={inputClasses} type="text" placeholder="Nowy login" value={newUser.username}
                  onChange={e => setNewUser({...newUser, username: e.target.value})} required />
-          <input className="admin-input" type="password" placeholder="Hasło" value={newUser.password}
+          <input className={inputClasses} type="password" placeholder="Hasło" value={newUser.password}
                  onChange={e => setNewUser({...newUser, password: e.target.value})} required />
-          <button type="submit" className="sunfire-btn">DODAJ ADMINISTRATORA</button>
+          <button type="submit" className={sunfireBtnClasses}>DODAJ ADMINISTRATORA</button>
         </form>
       </div>
     </div>

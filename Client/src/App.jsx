@@ -13,9 +13,6 @@ import LegalInfo from './pages/LegalInfo';
 import ScrollToTop from './components/ScrollToTop'; // IMPORT SCROLL FIX
 
 // Style
-import './App.css'; 
-import './Loading.css'; 
-
 function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
@@ -67,10 +64,10 @@ function App() {
 
   if (isInitialLoading) {
     return (
-      <div className="sunfire-loader-overlay">
-        <div className="sunfire-loader">
-          <div className="loader-circle"></div>
-          <h1 className="loader-logo">SUN<span>FIRE</span></h1>
+      <div className="fixed inset-0 w-screen h-screen bg-[#050505] flex justify-center items-center z-[99999]">
+        <div className="text-center flex flex-col items-center gap-[20px]">
+          <div className="w-[50px] h-[50px] border-[3px] border-white/5 border-t-white rounded-full animate-spin"></div>
+          <h1 className="text-white text-[2rem] tracking-[10px] font-black m-0 uppercase">SUN<span className="text-[#333]">FIRE</span></h1>
         </div>
       </div>
     );
@@ -81,7 +78,7 @@ function App() {
       <ScrollToTop /> {/* SCROLL FIX UMIESZCZONY W ROUTERZE */}
       <Navbar isAdmin={isAdmin} setIsAdmin={setIsAdmin} />
       
-      <main className="content-wrapper">
+      <main className="flex-1 flex flex-col">
         <Routes>
           <Route path="/" element={<Home isAdmin={isAdmin} />} />
           <Route path="/contact" element={<ContactPage />} />
