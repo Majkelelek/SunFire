@@ -207,9 +207,9 @@
 
 /* Przyciski */
 .sunfire-btn {
-  background: var(--sunfire-accent, #ff4d00);
+  background: transparent;
   color: white;
-  border: none;
+  border: var(--sunfire-accent, #ff4d00) 2px solid;
   padding: 12px 20px;
   border-radius: 8px;
   font-weight: bold;

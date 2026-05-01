@@ -130,19 +130,19 @@
 /* --- PRZYCISK WYSYŁANIA + STAN ŁADOWANIA --- */
 .sunfire-submit-btn {
     position: relative;
-    background: linear-gradient(90deg, var(--sunfire-accent), color-mix(in srgb, var(--sunfire-accent), white 20%));
-    color: white;
+    background: transparent;
+    color: var(--sunfire-accent);
     padding: 18px;
-    border: none;
+    border: 2px solid var(--sunfire-accent);
     border-radius: 12px;
-    font-size: 1.1rem;
+    font-size: 1.5rem;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 1px;
     cursor: pointer;
     transition: all 0.3s ease;
     margin-top: 10px;
-    box-shadow: 0 10px 20px color-mix(in srgb, var(--sunfire-accent), transparent 85%);
+    box-shadow: 0 0px 43px color-mix(in srgb, var(--sunfire-accent), transparent 85%);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -151,8 +151,11 @@
 }
 
 .sunfire-submit-btn:hover:not(:disabled) {
-    transform: translateY(-3px);
-    box-shadow: 0 15px 30px color-mix(in srgb, var(--sunfire-accent), transparent 80%);
+    transform: translateY(3px);
+    box-shadow: 0 0px 50px color-mix(in srgb, var(--sunfire-accent), transparent 80%);
+    border: 2px solid var(--sunfire-accent);
+    color: black;
+    background: var(--sunfire-accent);
     filter: brightness(1.1);
 }
 

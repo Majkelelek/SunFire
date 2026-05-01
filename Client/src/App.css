@@ -86,23 +86,7 @@ input:focus, textarea:focus, select:focus {
 }
 
 /* --- PRZYCISK (Dostosowany do motywu) --- */
-.sunfire-submit-btn {
-  background: var(--sunfire-accent);
-  color: white;
-  padding: 15px 30px;
-  border: none;
-  border-radius: 8px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
 
-.sunfire-submit-btn:hover {
-    /* Zamiast sztywnego e64500 używamy lekkiego rozjaśnienia/przyciemnienia */
-    filter: brightness(1.1);
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px color-mix(in srgb, var(--sunfire-accent), transparent 60%);
-}
 
 /* --- CHECKBOX --- */
 .checkbox-label input[type="checkbox"] {
