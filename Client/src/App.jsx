@@ -1,19 +1,11 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router } from 'react-router-dom';
 import { useEffect, useState, useCallback } from 'react';
 import Navbar from './components/Navbar';
-import Home from './pages/Home';
-import ContactPage from './pages/ContactPage';
-import Admin from './pages/Admin';
-import Login from './pages/Login';
-import PortfolioPage from './pages/PortfolioPage';
-import ProtectedRoute from './components/ProtectedRoute';
-import AboutPage from './pages/AboutPage';
 import Footer from './components/Footer';
-import LegalInfo from './pages/LegalInfo';
 import ScrollToTop from './components/ScrollToTop'; // IMPORT SCROLL FIX
 import AnimatedBackground from './components/AnimatedBackground'; // IMPORT TŁA
+import AnimatedRoutes from './components/AnimatedRoutes'; // IMPORT PŁYNNYCH PRZEJŚĆ
 
-// Style
 function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
@@ -62,8 +54,8 @@ function App() {
     return (
       <div className="fixed inset-0 w-screen h-screen bg-[#050505] flex justify-center items-center z-[99999]">
         <div className="text-center flex flex-col items-center gap-[20px]">
-          <div className="w-[50px] h-[50px] border-[3px] border-white/5 border-t-white rounded-full animate-spin"></div>
-          <h1 className="text-white text-[2rem] tracking-[10px] font-black m-0 uppercase">SUN<span className="text-[#333]">FIRE</span></h1>
+          <div className="w-[50px] h-[50px] border-[3px] border-white/5 border-t-[var(--sunfire-accent,#ff4d00)] rounded-full animate-spin"></div>
+          <h1 className="text-white text-[2rem] tracking-[10px] font-black m-0 uppercase">SUN<span className="text-white/30">FIRE</span></h1>
         </div>
       </div>
     );
@@ -82,15 +74,8 @@ function App() {
       <Navbar isAdmin={isAdmin} setIsAdmin={setIsAdmin} />
       
       <main className="flex-1 flex flex-col relative z-[1]">
-        <Routes>
-          <Route path="/" element={<Home isAdmin={isAdmin} />} />
-          <Route path="/contact" element={<ContactPage />} />
-          <Route path="/login" element={<Login setIsAdmin={setIsAdmin} checkAuth={checkAuth} />} />
-          <Route path="/about" element={<AboutPage isAdmin={isAdmin} />} />
-          <Route path="/admin" element={<ProtectedRoute isAdmin={isAdmin}><Admin /></ProtectedRoute>} />
-          <Route path="/polityka-prywatnosci" element={<LegalInfo />} />
-          <Route path="/portfolio" element={<PortfolioPage isAdmin={isAdmin} />} />
-        </Routes>
+        {/* WSZYSTKIE STRONY I ICH PŁYNNE PRZEJŚCIA */}
+        <AnimatedRoutes isAdmin={isAdmin} setIsAdmin={setIsAdmin} checkAuth={checkAuth} />
       </main>
 
       <Footer />

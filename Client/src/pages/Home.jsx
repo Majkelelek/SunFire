@@ -106,7 +106,7 @@ export default function Home({ isAdmin }) {
           if (item.size === '3-3') colSpanClass = "md:col-span-3 col-span-1";
           
           return (
-            <div key={index} className={`relative text-left p-[30px] rounded-[20px] transition duration-300 bg-white/5 hover:bg-white/10 group ${colSpanClass}`}>
+            <div key={index} className={`relative text-left p-[30px] rounded-[20px] transition duration-300 bg-[#050505]/80 border border-sunfire hover:bg-[#111111] hover:shadow-[0_0_20px_color-mix(in_srgb,var(--sunfire-accent),transparent_85%)] backdrop-blur-md group ${colSpanClass}`}>
               <span className="text-sunfire font-black text-[0.85rem] block mb-[20px] tracking-[2px]">0{index + 1}</span>
               <h3 className="text-[1.6rem] tracking-[2px] mb-[15px] uppercase">{item.title}</h3>
               <p className="text-white/40 text-[1rem] leading-[1.6]">{item.description}</p>
