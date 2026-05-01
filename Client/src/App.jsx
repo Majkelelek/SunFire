@@ -11,11 +11,13 @@ import AboutPage from './pages/AboutPage';
 import Footer from './components/Footer';
 import LegalInfo from './pages/LegalInfo';
 import ScrollToTop from './components/ScrollToTop'; // IMPORT SCROLL FIX
+import AnimatedBackground from './components/AnimatedBackground'; // IMPORT TŁA
 
 // Style
 function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [siteConfig, setSiteConfig] = useState(null); // Nowy stan dla tła
   const apiUrl = import.meta.env.VITE_API_URL || "";
 
   const checkAuth = useCallback(async () => {
@@ -34,20 +36,14 @@ function App() {
       const res = await fetch(`${apiUrl}/api/cms`);
       if (res.ok) {
         const config = await res.json();
+        setSiteConfig(config); // Zapisujemy config do stanu
+
         if (config.primaryColor) {
           document.documentElement.style.setProperty('--sunfire-accent', config.primaryColor);
         }
-        if (config.backgroundImageUrl) {
-          document.body.style.backgroundImage = `url(${config.backgroundImageUrl})`;
-          document.body.style.backgroundSize = "cover";
-          document.body.style.backgroundPosition = "center";
-          document.body.style.backgroundAttachment = "fixed";
-        } else {
-          document.body.style.backgroundImage = "none";
-          if (config.backgroundColor) {
-            document.body.style.backgroundColor = config.backgroundColor;
-          }
-        }
+        // Usuwamy bezposrednie ruszanie document.body
+        document.body.style.backgroundImage = "none";
+        document.body.style.backgroundColor = "transparent";
       }
     } catch (error) {
       console.error("Nie udało się pobrać konfiguracji wyglądu:", error);
@@ -76,9 +72,16 @@ function App() {
   return (
     <Router>
       <ScrollToTop /> {/* SCROLL FIX UMIESZCZONY W ROUTERZE */}
+      
+      {/* INTELIGENTNE TŁO */}
+      <AnimatedBackground 
+        backgroundImageUrl={siteConfig?.backgroundImageUrl} 
+        backgroundColor={siteConfig?.backgroundColor} 
+      />
+
       <Navbar isAdmin={isAdmin} setIsAdmin={setIsAdmin} />
       
-      <main className="flex-1 flex flex-col">
+      <main className="flex-1 flex flex-col relative z-[1]">
         <Routes>
           <Route path="/" element={<Home isAdmin={isAdmin} />} />
           <Route path="/contact" element={<ContactPage />} />
