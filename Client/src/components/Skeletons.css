@@ -1,0 +1,90 @@
+.skeleton-wrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  background-color: rgba(255, 255, 255, 0.05); /* Bardzo delikatne tło bazowe */
+  border-radius: 8px; /* Domyślne zaokrąglenie */
+}
+
+/* Animacja fali / pulse */
+.skeleton-wrapper::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.08),
+    transparent
+  );
+  transform: translateX(-100%);
+  animation: skeleton-shimmer 2s infinite ease-in-out;
+}
+
+@keyframes skeleton-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Warianty szkieletów dopasowane do projektu */
+
+.skeleton-text {
+  height: 20px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+}
+
+.skeleton-title {
+  height: 45px;
+  margin-bottom: 20px;
+  border-radius: 4px;
+  width: 70%;
+}
+
+.skeleton-hero {
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 20px;
+  padding: 40px;
+}
+
+.skeleton-card {
+  height: 300px;
+  border-radius: 12px;
+}
+
+.skeleton-portfolio-slot {
+  aspect-ratio: 1; /* Kwadrat dla siatki bento */
+  border-radius: 0;
+}
+
+/* Układ dla Home */
+.skeleton-home-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  padding: 40px;
+}
+
+/* Układ dla About */
+.skeleton-about-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+}
+
+@media (max-width: 768px) {
+  .skeleton-about-grid {
+    grid-template-columns: 1fr;
+  }
+  .skeleton-hero {
+    min-height: 300px;
+  }
+}

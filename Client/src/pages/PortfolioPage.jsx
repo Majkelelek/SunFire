@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from 'react';
+import { toast } from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
+import { projectService } from '../services/projectService';
+import { PortfolioSkeleton } from '../components/Skeletons';
 import './PortfolioPage.css';
 
-const PortfolioPage = ({ isAdmin }) => {
+const PortfolioPage = () => {
+    const { isAdmin } = useAuth();
     const [projects, setProjects] = useState([]);
     const [loading, setLoading] = useState(true);
     const apiUrl = import.meta.env.VITE_API_URL || "";
@@ -9,7 +14,7 @@ const PortfolioPage = ({ isAdmin }) => {
     // Stany dla modali
     const [expandedProject, setExpandedProject] = useState(null);
     const [editingSlot, setEditingSlot] = useState(null);
-    const [projectToDelete, setProjectToDelete] = useState(null); // NOWE: do modala usuwania
+    const [projectToDelete, setProjectToDelete] = useState(null); 
     
     const [modalStep, setModalStep] = useState('choose');
     const [textInput, setTextInput] = useState('');
@@ -18,11 +23,10 @@ const PortfolioPage = ({ isAdmin }) => {
 
     const fetchData = async () => {
         try {
-            const res = await fetch(`${apiUrl}/api/projects`);
-            const data = await res.json();
+            const data = await projectService.getAllProjects();
             setProjects(data);
         } catch (err) {
-            console.error("Błąd ładowania projektów");
+            toast.error("Błąd ładowania projektów");
         } finally {
             setLoading(false);
         }
@@ -58,14 +62,16 @@ const PortfolioPage = ({ isAdmin }) => {
             slotNumber: parseInt(editingSlot, 10),
             title: "Notatka"
         };
-        const res = await fetch(`${apiUrl}/api/projects`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(newProject),
-            credentials: 'include'
-        });
-        if (res.ok) { resetModal(); fetchData(); }
-        else { setUploading(false); }
+        try {
+            await projectService.createProject(newProject);
+            toast.success("Notatka dodana!");
+            resetModal(); 
+            fetchData();
+        } catch (err) {
+            toast.error("Błąd podczas dodawania notatki");
+        } finally {
+            setUploading(false);
+        }
     };
 
     const handleAddImage = async () => {
@@ -84,15 +90,15 @@ const PortfolioPage = ({ isAdmin }) => {
                 slotNumber: parseInt(editingSlot, 10),
                 title: "Obraz"
             };
-            await fetch(`${apiUrl}/api/projects`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(newProject),
-                credentials: 'include'
-            });
-            resetModal(); fetchData();
-        } catch (err) { console.error("Błąd uploadu"); }
-        finally { setUploading(false); }
+            await projectService.createProject(newProject);
+            toast.success("Obraz dodany!");
+            resetModal(); 
+            fetchData();
+        } catch (err) { 
+            toast.error("Błąd podczas uploadu obrazu"); 
+        } finally { 
+            setUploading(false); 
+        }
     };
 
     // --- NOWA LOGIKA USUWANIA ---
@@ -100,14 +106,12 @@ const PortfolioPage = ({ isAdmin }) => {
         if (!projectToDelete) return;
         setUploading(true);
         try {
-            await fetch(`${apiUrl}/api/projects/${projectToDelete}`, { 
-                method: 'DELETE', 
-                credentials: 'include' 
-            });
+            await projectService.deleteProject(projectToDelete);
+            toast.success("Element usunięty!");
             setProjectToDelete(null);
             fetchData();
         } catch (err) {
-            console.error("Błąd usuwania");
+            toast.error("Błąd podczas usuwania elementu");
         } finally {
             setUploading(false);
         }
@@ -121,7 +125,7 @@ const PortfolioPage = ({ isAdmin }) => {
         setUploading(false);
     };
 
-    if (loading) return <div className="loading"></div>;
+    if (loading) return <PortfolioSkeleton />;
 
     return (
         <div className="portfolio-container">
@@ -157,7 +161,7 @@ const PortfolioPage = ({ isAdmin }) => {
                                     {isAdmin && (
                                         <button className="delete-slot-btn" onClick={(e) => {
                                             e.stopPropagation();
-                                            setProjectToDelete(project.id || project.Id); // Otwiera modal zamiast alertu
+                                            setProjectToDelete(project.id || project.Id);
                                         }}>×</button>
                                     )}
                                 </div>
@@ -178,7 +182,6 @@ const PortfolioPage = ({ isAdmin }) => {
             {/* LIGHTBOX (Powiększony obraz) */}
             {expandedProject && (
                 <div className="lightbox-overlay" onClick={() => setExpandedProject(null)}>
-                    {/* Ten przycisk jest teraz duży i jaskrawy dzięki CSS */}
                     <button className="lightbox-close" onClick={() => setExpandedProject(null)}>×</button>
                     <div className="lightbox-content" onClick={e => e.stopPropagation()}>
                         <img src={expandedProject.imageUrl || expandedProject.ImageUrl} alt="Powiększony" />
@@ -186,7 +189,7 @@ const PortfolioPage = ({ isAdmin }) => {
                 </div>
             )}
 
-            {/* MODAL USUWANIA (NOWOŚĆ) */}
+            {/* MODAL USUWANIA */}
             {projectToDelete && (
                 <div className="modal-overlay" onClick={() => setProjectToDelete(null)}>
                     <div className="modal-content" onClick={e => e.stopPropagation()}>

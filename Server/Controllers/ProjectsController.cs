@@ -1,35 +1,34 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using MongoDB.Driver;
 using Server.Models;
+using Server.Services;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Server.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")] // To zamieni się na api/projects
+    [Route("api/[controller]")]
     public class ProjectsController : ControllerBase
     {
-        private readonly IMongoCollection<Project> _projects;
+        private readonly IProjectService _projectService;
 
-        public ProjectsController(IMongoClient client)
+        public ProjectsController(IProjectService projectService)
         {
-            var database = client.GetDatabase("SunfireDB");
-            _projects = database.GetCollection<Project>("Projects");
+            _projectService = projectService;
         }
 
-        // To naprawi błąd GET 404
         [HttpGet]
-        public async Task<List<Project>> Get() 
+        public async Task<IEnumerable<Project>> Get() 
         {
-            return await _projects.Find(_ => true).ToListAsync();
+            return await _projectService.GetAllProjectsAsync();
         }
 
-        // To naprawi błąd POST 404
         [HttpPost]
         [Authorize]
         public async Task<IActionResult> Create([FromBody] Project project)
         {
-            await _projects.InsertOneAsync(project);
+            await _projectService.CreateProjectAsync(project);
             return Ok(project);
         }
 
@@ -37,14 +36,15 @@ namespace Server.Controllers
         [Authorize]
         public async Task<IActionResult> Delete(string id)
         {
-            await _projects.DeleteOneAsync(p => p.Id == id);
+            await _projectService.DeleteProjectAsync(id);
             return Ok();
         }
+
         [HttpPut("{id}")]
         [Authorize]
         public async Task<IActionResult> Update(string id, [FromBody] Project updated)
         {
-            await _projects.ReplaceOneAsync(p => p.Id == id, updated);
+            await _projectService.UpdateProjectAsync(id, updated);
             return Ok(updated);
         }
     }

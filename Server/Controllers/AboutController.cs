@@ -1,39 +1,29 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MongoDB.Driver;
 using Server.Models;
+using Server.Services;
 using System;
 using System.Threading.Tasks;
 
 namespace Server.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")] // Automatycznie ustawi trasę na api/about
+    [Route("api/[controller]")]
     public class AboutController : ControllerBase
     {
-        private readonly IMongoCollection<AboutData> _aboutCollection;
+        private readonly IAboutService _aboutService;
 
-        public AboutController(IMongoClient client)
+        public AboutController(IAboutService aboutService)
         {
-            // Upewnij się, że nazwa bazy "SunfireDB" zgadza się z Twoją konfiguracją
-            var database = client.GetDatabase("SunfireDB");
-            _aboutCollection = database.GetCollection<AboutData>("AboutData");
+            _aboutService = aboutService;
         }
 
-        // GET: api/cms/about
         [HttpGet]
         public async Task<ActionResult<AboutData>> Get()
         {
             try
             {
-                var data = await _aboutCollection.Find(a => a.Id == "about_me_main").FirstOrDefaultAsync();
-                
-                if (data == null)
-                {
-                    // Zwracamy obiekt domyślny, jeśli baza jest pusta
-                    return Ok(new AboutData());
-                }
-                
+                var data = await _aboutService.GetAboutDataAsync();
                 return Ok(data);
             }
             catch (Exception ex)
@@ -42,9 +32,8 @@ namespace Server.Controllers
             }
         }
 
-        // POST: api/cms/about
         [HttpPost]
-        [Authorize] // Wymaga zalogowania (JWT/Ciasteczko)
+        [Authorize]
         public async Task<IActionResult> Save([FromBody] AboutData newData)
         {
             if (newData == null)
@@ -54,26 +43,11 @@ namespace Server.Controllers
 
             try
             {
-                // Wymuszamy stałe ID dokumentu
-                newData.Id = "about_me_main";
-
-                // Jeśli lista sekcji przyszła pusta (null), zamieniamy na pustą listę
-                if (newData.Sections == null)
-                {
-                    newData.Sections = new System.Collections.Generic.List<AboutSection>();
-                }
-
-                // UPSERT: Jeśli dokument istnieje - zamień go. Jeśli nie - stwórz.
-                var result = await _aboutCollection.ReplaceOneAsync(
-                    filter: a => a.Id == "about_me_main",
-                    replacement: newData,
-                    options: new ReplaceOptions { IsUpsert = true }
-                );
-
+                await _aboutService.UpdateAboutDataAsync(newData);
                 return Ok(new { 
                     status = "success", 
                     message = "Zawartość strony O mnie została zapisana.",
-                    isUpdate = result.IsAcknowledged 
+                    isUpdate = true 
                 });
             }
             catch (Exception)

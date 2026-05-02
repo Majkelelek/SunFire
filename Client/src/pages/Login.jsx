@@ -1,56 +1,33 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { toast } from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
 import './Login.css';
 
-export default function Login({ setIsAdmin, checkAuth }) {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+export default function Login() {
+  const { register, handleSubmit, formState: { errors } } = useForm();
   const [attemptsInfo, setAttemptsInfo] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const apiUrl = import.meta.env.VITE_API_URL || "";
+  const { login } = useAuth();
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
+  const onSubmit = async (data) => {
     setLoading(true);
-    setError('');
     setAttemptsInfo(null);
 
     try {
-      const res = await fetch(`${apiUrl}/api/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          Username: username, 
-          Password: password 
-        }),
-        credentials: 'include'
-      });
-
-      // Sprawdzamy czy odpowiedź zawiera treść przed parsonowaniem JSON
-      const data = res.headers.get('content-type')?.includes('application/json') 
-                   ? await res.json() 
-                   : null;
-
-      if (res.ok) {
-        // 1. Aktualizujemy stan w App.jsx
-        if (setIsAdmin) setIsAdmin(true);
-        
-        // 2. Wymuszamy odświeżenie danych o sesji z serwera
-        if (checkAuth) await checkAuth();
-
-        // 3. Przekierowujemy do panelu (Navbar będzie już zaktualizowany)
-        navigate('/admin');
-      } else {
-        // Obsługa błędów i wyświetlanie liczby pozostałych prób
-        setError(data?.message || 'Niepoprawne dane logowania.');
-        if (data?.remainingAttempts !== undefined) {
-          setAttemptsInfo(data.remainingAttempts);
-        }
-      }
+      await login(data.username, data.password);
+      toast.success('Zalogowano pomyślnie!');
+      navigate('/admin');
     } catch (err) {
-      setError('Błąd połączenia z serwerem.');
+      const errorData = err.data;
+      const errorMessage = errorData?.message || 'Niepoprawne dane logowania.';
+      toast.error(errorMessage);
+      
+      if (errorData?.remainingAttempts !== undefined) {
+        setAttemptsInfo(errorData.remainingAttempts);
+      }
     } finally {
       setLoading(false);
     }
@@ -60,13 +37,11 @@ export default function Login({ setIsAdmin, checkAuth }) {
     <div className="login-page">
       <div className="login-background-glow"></div>
       
-      <form className="login-card" onSubmit={handleLogin}>
+      <form className="login-card" onSubmit={handleSubmit(onSubmit)} noValidate>
         <div className="login-header">
           <h1>SUN<span>FIRE</span></h1>
         </div>
 
-        {error && <div className="login-error-badge">{error}</div>}
-        
         {attemptsInfo !== null && attemptsInfo > 0 && (
           <p className="attempts-info" style={{ color: 'var(--sunfire-accent, #ff4d00)', textAlign: 'center', fontSize: '0.85rem', marginBottom: '15px' }}>
             Pozostało prób: {attemptsInfo}
@@ -77,22 +52,20 @@ export default function Login({ setIsAdmin, checkAuth }) {
           <label>Login</label>
           <input 
             type="text" 
-            value={username}
-            onChange={(e) => setUsername(e.target.value)} 
             placeholder="username"
-            required
+            {...register("username", { required: "Podaj login" })}
           />
+          {errors.username && <span style={{ color: 'red', fontSize: '0.8rem', marginTop: '4px' }}>{errors.username.message}</span>}
         </div>
 
         <div className="login-input-group">
           <label>Hasło</label>
           <input 
             type="password" 
-            value={password}
-            onChange={(e) => setPassword(e.target.value)} 
             placeholder="••••••••"
-            required
+            {...register("password", { required: "Podaj hasło" })}
           />
+          {errors.password && <span style={{ color: 'red', fontSize: '0.8rem', marginTop: '4px' }}>{errors.password.message}</span>}
         </div>
 
         <button className="login-submit-btn" type="submit" disabled={loading}>

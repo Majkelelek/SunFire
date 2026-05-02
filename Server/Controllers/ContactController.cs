@@ -1,8 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
-using System.Net;
-using System.Net.Mail;
 using Server.Models;
+using Server.Services;
 using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.Tasks;
+using System;
 
 namespace Server.Controllers
 {
@@ -10,42 +11,28 @@ namespace Server.Controllers
     [Route("api/[controller]")]
     public class ContactController : ControllerBase
     {
+        private readonly IContactService _contactService;
+
+        public ContactController(IContactService contactService)
+        {
+            _contactService = contactService;
+        }
+
         [HttpPost]
-        [EnableRateLimiting("ContactSpamProtection")] // Ochrona przed spamem
+        [EnableRateLimiting("ContactSpamProtection")]
         public async Task<IActionResult> SendEmail([FromBody] ContactMessage contact)
         {
             try 
             {
-                var senderEmail = Environment.GetEnvironmentVariable("EMAIL_SENDER_EMAIL");
-                var senderPassword = Environment.GetEnvironmentVariable("EMAIL_SENDER_PASSWORD");
-
-                if (string.IsNullOrEmpty(senderEmail) || string.IsNullOrEmpty(senderPassword))
-                {
-                    // Zwracamy ogólny błąd, żeby nie zdradzać detali serwera klientowi
-                    return StatusCode(500, "Wystąpił problem z konfiguracją poczty na serwerze.");
-                }
-
-                using var client = new SmtpClient("smtp.gmail.com", 587)
-                {
-                    Credentials = new NetworkCredential(senderEmail, senderPassword),
-                    EnableSsl = true
-                };
-
-                var mailMessage = new MailMessage
-                {
-                    From = new MailAddress(senderEmail),
-                    Subject = $"Kontakt: {contact.Subject}",
-                    Body = $"Wiadomość od: {contact.Name} ({contact.Email})\n\n{contact.Message}",
-                    IsBodyHtml = false
-                };
-                mailMessage.To.Add(senderEmail); // Wysyłka do samego siebie
-
-                await client.SendMailAsync(mailMessage);
+                await _contactService.SendEmailAsync(contact);
                 return Ok(new { message = "Wysłano!" });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Łapiemy wszystkie błędy SMTP (np. brak sieci, złe hasło) i zwracamy ładny komunikat
+                if (ex.Message.Contains("konfiguracją poczty"))
+                {
+                    return StatusCode(500, ex.Message);
+                }
                 return StatusCode(500, "Wystąpił problem podczas wysyłania wiadomości. Spróbuj ponownie później.");
             }
         }

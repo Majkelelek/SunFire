@@ -363,11 +363,17 @@
 }
 
 /* Efekt focus (aktywne pole) - tutaj dodajemy charakterystyczny glow */
+.sunfire-btn:hover {
+  background: var(--sunfire-accent);
+  color: #000;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px color-mix(in srgb, var(--sunfire-accent), transparent 60%);
+}
+
 .admin-input:focus {
   background: rgba(0, 0, 0, 0.4);
   border-color: var(--sunfire-accent, #ff4d00);
   box-shadow: 0 0 20px color-mix(in srgb, var(--sunfire-accent, #ff4d00), transparent 85%);
-  transform: translateY(-1px);
 }
 
 /* Styl dla etykiet (labels) nad inputami */

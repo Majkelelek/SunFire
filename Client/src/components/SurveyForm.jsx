@@ -1,80 +1,36 @@
 import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'react-hot-toast';
 import './SurveyForm.css';
 
 const SurveyForm = () => {
-    const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
-    const [consent, setConsent] = useState(false); 
-    const [errors, setErrors] = useState({});
-    const [status, setStatus] = useState('');
+    const { register, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm({
+        defaultValues: { consent: false }
+    });
+    
     const [isSent, setIsSent] = useState(false); 
-    const [isLoading, setIsLoading] = useState(false); // NOWE: do obsługi spinnera i blokady kliknięcia
     const [showPrivacy, setShowPrivacy] = useState(false);
     
     const apiUrl = import.meta.env.VITE_API_URL || "";
-    
-    const validateEmail = (email) => /\S+@\S+\.\S+/.test(email);
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-        if (errors[name]) {
-            setErrors(prev => ({ ...prev, [name]: '' }));
-        }
-    };
-
-    const handleConsentChange = (e) => {
-        const checked = e.target.checked;
-        setConsent(checked);
-        if (checked && errors.consent) {
-            setErrors(prev => ({ ...prev, consent: '' }));
-        }
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        let tempErrors = {};
-
-        if (!formData.name.trim()) tempErrors.name = "Imię jest wymagane";
-        if (!formData.subject.trim()) tempErrors.subject = "Temat jest wymagany";
-        if (!formData.message.trim()) tempErrors.message = "Wpisz treść wiadomości";
-        
-        if (!formData.email.trim()) {
-            tempErrors.email = "E-mail jest wymagany";
-        } else if (!validateEmail(formData.email)) {
-            tempErrors.email = "Niepoprawny format";
-        }
-
-        if (!consent) {
-            tempErrors.consent = "Zaznaczenie zgody jest wymagane";
-        }
-
-        setErrors(tempErrors);
-        if (Object.keys(tempErrors).length > 0) return;
-
-        setStatus('');         // Czyścimy poprzednie statusy (np. błędy)
-        setIsLoading(true);    // Włączamy kręciołek i blokujemy przycisk
-
+    const onSubmit = async (data) => {
         try {
             const res = await fetch(`${apiUrl}/api/Contact`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData) 
+                body: JSON.stringify(data) 
             });
 
             if (res.ok) {
                 setIsSent(true); 
-                setFormData({ name: '', email: '', subject: '', message: '' });
-                setConsent(false);
-                setErrors({});
+                reset();
+                toast.success('Wiadomość została wysłana!');
             } else {
                 const errorData = await res.text();
-                setStatus(`Błąd: ${errorData || 'Wystąpił błąd serwera.'}`);
+                toast.error(`Błąd: ${errorData || 'Wystąpił błąd serwera.'}`);
             }
         } catch (err) {
-            setStatus('Błąd połączenia z serwerem. Spróbuj później.');
-        } finally {
-            // ZAWSZE (sukces czy błąd) wyłączamy spinner po zakończeniu
-            setIsLoading(false); 
+            toast.error('Błąd połączenia z serwerem. Spróbuj później.');
         }
     };
 
@@ -110,84 +66,79 @@ const SurveyForm = () => {
 
     return (
         <div className="survey-container">
-            <form className="survey-form" onSubmit={handleSubmit} noValidate>
+            <form className="survey-form" onSubmit={handleSubmit(onSubmit)} noValidate>
                 <h2>Skontaktuj się ze mną</h2>
                 
                 <div className="input-group">
                     <input 
-                        name="name"
                         className={errors.name ? 'error-border' : ''} 
                         type="text" 
                         maxLength="50"  
                         placeholder="Twoje Imię" 
-                        value={formData.name} 
-                        onChange={handleChange} 
+                        {...register("name", { required: "Imię jest wymagane" })}
                     />
-                    {errors.name && <span className="error-msg">{errors.name}</span>}
+                    {errors.name && <span className="error-msg">{errors.name.message}</span>}
                 </div>
 
                 <div className="input-group">
                     <input 
-                        name="email"
                         className={errors.email ? 'error-border' : ''} 
                         type="email" 
                         maxLength="254"
                         placeholder="Twój E-mail" 
-                        value={formData.email} 
-                        onChange={handleChange} 
+                        {...register("email", { 
+                            required: "E-mail jest wymagany",
+                            pattern: {
+                                value: /\S+@\S+\.\S+/,
+                                message: "Niepoprawny format"
+                            }
+                        })}
                     />
-                    {errors.email && <span className="error-msg">{errors.email}</span>}
+                    {errors.email && <span className="error-msg">{errors.email.message}</span>}
                 </div>
 
                 <div className="input-group">
                     <input 
-                        name="subject"
                         className={errors.subject ? 'error-border' : ''} 
                         type="text" 
                         maxLength="100"
                         placeholder="Temat" 
-                        value={formData.subject} 
-                        onChange={handleChange} 
+                        {...register("subject", { required: "Temat jest wymagany" })}
                     />
-                    {errors.subject && <span className="error-msg">{errors.subject}</span>}
+                    {errors.subject && <span className="error-msg">{errors.subject.message}</span>}
                 </div>
 
                 <div className="input-group">
                     <textarea 
-                        name="message"
                         className={errors.message ? 'error-border' : ''} 
                         placeholder="Twoja wiadomość..." 
                         maxLength="2000"
-                        value={formData.message} 
-                        onChange={handleChange} 
+                        {...register("message", { required: "Wpisz treść wiadomości" })}
                     />
-                    {errors.message && <span className="error-msg">{errors.message}</span>}
+                    {errors.message && <span className="error-msg">{errors.message.message}</span>}
                 </div>
 
                 <div className="input-group checkbox-group">
                     <label className="checkbox-label">
                         <input 
                             type="checkbox" 
-                            checked={consent} 
-                            onChange={handleConsentChange} 
+                            {...register("consent", { required: "Zaznaczenie zgody jest wymagane" })}
                         />
                         <span>
                             Wyrażam zgodę na przetwarzanie danych w celu odpowiedzi na moją wiadomość. 
                             Zapoznaj się z <span onClick={(e) => { e.preventDefault(); setShowPrivacy(true); }} className="privacy-link">polityką prywatności</span>.
                         </span>
                     </label>
-                    {errors.consent && <span className="error-msg">{errors.consent}</span>}
+                    {errors.consent && <span className="error-msg">{errors.consent.message}</span>}
                 </div>
 
-                {/* ZMIANA: Przycisk z obsługą stanu ładowania */}
                 <button 
                     type="submit" 
                     className="sunfire-submit-btn" 
-                    disabled={isLoading} // Blokada ponownego kliknięcia
+                    disabled={isSubmitting} 
                 >
-                    {isLoading ? (
+                    {isSubmitting ? (
                         <>
-                            {/* Spinner definiowany w CSS */}
                             <span className="loading-spinner"></span>
                             <span>Wysyłanie...</span>
                         </>
@@ -195,9 +146,6 @@ const SurveyForm = () => {
                         "Wyślij Formularz"
                     )}
                 </button>
-
-                {/* Status teraz stylowany jako komunikat o błędzie pod przyciskiem */}
-                {status && <p className="form-status">{status}</p>}
             </form>
 
             {showPrivacy && (

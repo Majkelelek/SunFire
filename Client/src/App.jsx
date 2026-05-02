@@ -1,42 +1,27 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router } from 'react-router-dom';
 import { useEffect, useState, useCallback } from 'react';
 import Navbar from './components/Navbar';
-import Home from './pages/Home';
-import ContactPage from './pages/ContactPage';
-import Admin from './pages/Admin';
-import Login from './pages/Login';
-import PortfolioPage from './pages/PortfolioPage';
-import ProtectedRoute from './components/ProtectedRoute';
-import AboutPage from './pages/AboutPage';
 import Footer from './components/Footer';
-import LegalInfo from './pages/LegalInfo';
 import ScrollToTop from './components/ScrollToTop'; // IMPORT SCROLL FIX
+import AnimatedRoutes from './components/AnimatedRoutes';
+import { useAuth } from './context/AuthContext';
+import { cmsService } from './services/cmsService';
 
 // Style
 import './App.css'; 
 import './Loading.css'; 
 
-function App() {
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
-  const apiUrl = import.meta.env.VITE_API_URL || "";
+import { Toaster } from 'react-hot-toast';
 
-  const checkAuth = useCallback(async () => {
-    try {
-      const res = await fetch(`${apiUrl}/api/auth/check`, { credentials: 'include' });
-      const authData = await res.json();
-      setIsAdmin(authData.isAuthenticated);
-    } catch (error) {
-      console.error("Auth check failed:", error);
-      setIsAdmin(false);
-    }
-  }, [apiUrl]);
+function App() {
+  const { isAuthLoading } = useAuth();
+  const [isConfigLoading, setIsConfigLoading] = useState(true);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   const fetchSiteConfig = useCallback(async () => {
     try {
-      const res = await fetch(`${apiUrl}/api/cms`);
-      if (res.ok) {
-        const config = await res.json();
+      const config = await cmsService.getSiteConfig();
+      if (config) {
         if (config.primaryColor) {
           document.documentElement.style.setProperty('--sunfire-accent', config.primaryColor);
         }
@@ -54,16 +39,20 @@ function App() {
       }
     } catch (error) {
       console.error("Nie udało się pobrać konfiguracji wyglądu:", error);
+    } finally {
+      setIsConfigLoading(false);
     }
-  }, [apiUrl]);
+  }, []);
 
   useEffect(() => {
-    const initApp = async () => {
-      await Promise.all([checkAuth(), fetchSiteConfig()]);
+    fetchSiteConfig();
+  }, [fetchSiteConfig]);
+
+  useEffect(() => {
+    if (!isAuthLoading && !isConfigLoading) {
       setTimeout(() => { setIsInitialLoading(false); }, 300);
-    };
-    initApp();
-  }, [checkAuth, fetchSiteConfig]);
+    }
+  }, [isAuthLoading, isConfigLoading]);
 
   if (isInitialLoading) {
     return (
@@ -79,21 +68,32 @@ function App() {
   return (
     <Router>
       <ScrollToTop /> {/* SCROLL FIX UMIESZCZONY W ROUTERZE */}
-      <Navbar isAdmin={isAdmin} setIsAdmin={setIsAdmin} />
+      <Navbar />
       
       <main className="content-wrapper">
-        <Routes>
-          <Route path="/" element={<Home isAdmin={isAdmin} />} />
-          <Route path="/contact" element={<ContactPage />} />
-          <Route path="/login" element={<Login setIsAdmin={setIsAdmin} checkAuth={checkAuth} />} />
-          <Route path="/about" element={<AboutPage isAdmin={isAdmin} />} />
-          <Route path="/admin" element={<ProtectedRoute isAdmin={isAdmin}><Admin /></ProtectedRoute>} />
-          <Route path="/polityka-prywatnosci" element={<LegalInfo />} />
-          <Route path="/portfolio" element={<PortfolioPage isAdmin={isAdmin} />} />
-        </Routes>
+        <AnimatedRoutes />
       </main>
 
       <Footer />
+
+      {/* Global Toaster Configuration */}
+      <Toaster 
+        position="bottom-right"
+        toastOptions={{
+          style: {
+            background: '#111',
+            color: '#fff',
+            border: '1px solid #333',
+            fontFamily: 'Inter, sans-serif'
+          },
+          success: {
+            iconTheme: {
+              primary: 'var(--sunfire-accent)',
+              secondary: '#111',
+            },
+          },
+        }} 
+      />
     </Router>
   );
 }

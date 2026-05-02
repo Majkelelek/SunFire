@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { HexColorPicker } from "react-colorful";
+import { toast } from 'react-hot-toast';
 import './Admin.css';
 
 export default function Admin() {
@@ -11,13 +12,12 @@ export default function Admin() {
   const [bgFile, setBgFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   
-  // State dla modala (analogicznie do AboutPage)
-  const [modal, setModal] = useState({ isOpen: false, title: '', msg: '', isConfirm: false, onConfirm: null });
+  // State dla modala confirm
+  const [modal, setModal] = useState({ isOpen: false, title: '', msg: '', onConfirm: null });
 
   const apiUrl = import.meta.env.VITE_API_URL || "";
 
-  const showInfo = (title, msg) => setModal({ isOpen: true, title, msg, isConfirm: false });
-  const showConfirm = (title, msg, onConfirm) => setModal({ isOpen: true, title, msg, isConfirm: true, onConfirm });
+  const showConfirm = (title, msg, onConfirm) => setModal({ isOpen: true, title, msg, onConfirm });
   const closeModal = () => setModal({ ...modal, isOpen: false });
 
   useEffect(() => {
@@ -46,9 +46,9 @@ export default function Admin() {
     });
 
     if (res.ok) {
-      showInfo("ZAPISANO", "Zmiany zostały pomyślnie zapisane w bazie danych.");
+      toast.success("Zmiany zostały pomyślnie zapisane w bazie danych.");
     } else {
-      showInfo("SESJA WYGASŁA", "Twoja sesja wygasła. Zostaniesz przekierowany do logowania.");
+      toast.error("Twoja sesja wygasła. Zostaniesz przekierowany do logowania.");
       navigate('/login');
     }
     setLoading(false);
@@ -64,15 +64,18 @@ export default function Admin() {
     });
 
     if (res.ok) {
-      showInfo("SUKCES", "Nowy administrator został pomyślnie zarejestrowany.");
+      toast.success("Nowy administrator został pomyślnie zarejestrowany.");
       setNewUser({ username: '', password: '' });
     } else {
-      showInfo("BŁĄD", "Nie masz uprawnień lub taki użytkownik już istnieje.");
+      toast.error("Nie masz uprawnień lub taki użytkownik już istnieje.");
     }
   };
 
   const handleUploadBg = async () => {
-    if (!bgFile) return showInfo("BRAK PLIKU", "Wybierz plik graficzny przed wysłaniem.");
+    if (!bgFile) {
+        toast.error("Wybierz plik graficzny przed wysłaniem.");
+        return;
+    }
     
     setUploading(true);
     const formData = new FormData();
@@ -86,12 +89,12 @@ export default function Admin() {
 
     if (res.ok) {
         const data = await res.json();
-        showInfo("ZAKTUALIZOWANO", "Nowe zdjęcie tła zostało ustawione.");
+        toast.success("Nowe zdjęcie tła zostało ustawione.");
         document.body.style.backgroundImage = `url(${data.imageUrl})`;
         document.body.style.backgroundSize = "cover";
         document.body.style.backgroundAttachment = "fixed";
     } else {
-        showInfo("BŁĄD", "Wystąpił problem podczas przesyłania zdjęcia.");
+        toast.error("Wystąpił problem podczas przesyłania zdjęcia.");
     }
     setUploading(false);
   };
@@ -104,11 +107,11 @@ export default function Admin() {
       });
 
       if (res.ok) {
-          showInfo("USUNIĘTO", "Zdjęcie tła zostało usunięte.");
+          toast.success("Zdjęcie tła zostało usunięte.");
           document.body.style.backgroundImage = "none";
           document.body.style.backgroundColor = config.backgroundColor;
       } else {
-          showInfo("BŁĄD", "Błąd podczas usuwania tła z serwera.");
+          toast.error("Błąd podczas usuwania tła z serwera.");
       }
     });
   };
@@ -117,21 +120,15 @@ export default function Admin() {
     <div className="admin-wrapper">
       <h1 className="admin-header">Sunfire CMS</h1>
 
-      {/* MODAL SYSTEM (Stylistyka jak w About) */}
+      {/* MODAL SYSTEM (Tylko Potwierdzenia) */}
       {modal.isOpen && (
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <h2 style={modal.isConfirm ? { color: '#ff4444' } : {}}>{modal.title}</h2>
+            <h2 style={{ color: '#ff4444' }}>{modal.title}</h2>
             <p>{modal.msg}</p>
             <div className="modal-btns">
-              {modal.isConfirm ? (
-                <>
-                  <button className="btn-delete" onClick={() => { modal.onConfirm(); closeModal(); }}>POTWIERDŹ</button>
-                  <button className="btn-cancel" onClick={closeModal}>ANULUJ</button>
-                </>
-              ) : (
-                <button className="btn-save" onClick={closeModal}>ZROZUMIAŁEM</button>
-              )}
+                <button className="btn-delete" onClick={() => { modal.onConfirm(); closeModal(); }}>POTWIERDŹ</button>
+                <button className="btn-cancel" onClick={closeModal}>ANULUJ</button>
             </div>
           </div>
         </div>

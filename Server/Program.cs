@@ -9,6 +9,7 @@ using Server.Models;
 using System.Security.Claims;
 using Microsoft.AspNetCore.HttpOverrides;
 using System.Security.Authentication;
+using Server.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,6 +47,9 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.KnownNetworks.Clear(); 
     options.KnownProxies.Clear();
 });
+
+// Zarejestruj własne serwisy i repozytoria
+builder.Services.AddApplicationServices();
 
 builder.Services.AddControllers();
 

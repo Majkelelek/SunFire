@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { homeService } from '../services/homeService';
+import ConfirmModal from '../components/modals/ConfirmModal';
+import { HomeSkeleton } from '../components/Skeletons';
+import { toast } from 'react-hot-toast';
 import './Home.css';
 
-export default function Home({ isAdmin }) {
+export default function Home() {
+  const { isAdmin } = useAuth();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const apiUrl = import.meta.env.VITE_API_URL || "";
 
   // Stany edycji i modali
   const [editingItem, setEditingItem] = useState(null); // 'hero' lub {type: 'focus', index}
@@ -15,8 +20,7 @@ export default function Home({ isAdmin }) {
 
   const fetchData = async () => {
     try {
-      const res = await fetch(`${apiUrl}/api/home`);
-      const result = await res.json();
+      const result = await homeService.getHomeData();
       setData(result);
     } catch (err) {
       console.error("Błąd ładowania strony głównej:", err);
@@ -41,19 +45,13 @@ export default function Home({ isAdmin }) {
   const handleSave = async (dataToSave = tempData) => {
     setIsSaving(true);
     try {
-      const res = await fetch(`${apiUrl}/api/home`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(dataToSave),
-        credentials: 'include'
-      });
-      if (res.ok) {
-        setData(dataToSave);
-        setEditingItem(null);
-        setItemToDelete(null);
-      }
+      await homeService.updateHomeData(dataToSave);
+      setData(dataToSave);
+      setEditingItem(null);
+      setItemToDelete(null);
+      toast.success("Zapisano pomyślnie");
     } catch (err) {
-      alert("Błąd połączenia z serwerem.");
+      toast.error("Błąd połączenia z serwerem.");
     } finally {
       setIsSaving(false);
     }
@@ -71,7 +69,7 @@ export default function Home({ isAdmin }) {
     handleSave(updatedData);
   };
 
-  if (loading) return <div className="loading">INITIALIZING SUNFIRE...</div>;
+  if (loading) return <HomeSkeleton />;
   if (!data) return <div className="error-screen">DATABASE ERROR.</div>;
 
   return (
@@ -123,19 +121,15 @@ export default function Home({ isAdmin }) {
         )}
       </section>
 
-      {/* --- MODAL USUWANIA --- */}
-      {itemToDelete !== null && (
-        <div className="modal-overlay" onClick={() => setItemToDelete(null)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <h2 className="danger-text">POTWIERDŹ USUNIĘCIE</h2>
-            <p className="modal-desc">Czy na pewno chcesz usunąć: <strong>{data.focusItems[itemToDelete]?.title}</strong>?</p>
-            <div className="modal-btns">
-              <button className="btn-delete" onClick={confirmDelete} disabled={isSaving}>USUŃ</button>
-              <button className="btn-cancel" onClick={() => setItemToDelete(null)}>ANULUJ</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmModal
+        isOpen={itemToDelete !== null}
+        title="POTWIERDŹ USUNIĘCIE"
+        message={data.focusItems && itemToDelete !== null ? `Czy na pewno chcesz usunąć: ${data.focusItems[itemToDelete]?.title}?` : ''}
+        onConfirm={confirmDelete}
+        onCancel={() => setItemToDelete(null)}
+        isSaving={isSaving}
+        confirmText="USUŃ"
+      />
 
       {/* --- MODAL EDYCJI --- */}
       {editingItem && (

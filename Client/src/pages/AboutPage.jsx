@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import { toast } from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
+import { AboutSkeleton } from '../components/Skeletons';
 import './AboutPage.css';
 
-export default function AboutPage({ isAdmin }) {
+export default function AboutPage() {
+    const { isAdmin } = useAuth();
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const apiUrl = import.meta.env.VITE_API_URL || "";
@@ -23,7 +27,7 @@ export default function AboutPage({ isAdmin }) {
             const result = await res.json();
             setData(result);
         } catch (err) {
-            console.error("Błąd ładowania danych o mnie:", err);
+            toast.error("Błąd ładowania danych o mnie");
         }
         finally { setLoading(false); }
     };
@@ -46,29 +50,27 @@ export default function AboutPage({ isAdmin }) {
             );
         }
 
-        await sendUpdate(updatedData);
+        await sendUpdate(updatedData, "Zapisano zmiany!");
     };
 
     const addNewSection = async () => {
         const newSec = { id: Date.now().toString(), title: "Nowa Sekcja", content: "Treść...", size: "half" };
         const updatedData = { ...data, sections: [...(data.sections || []), newSec] };
-        await sendUpdate(updatedData);
+        await sendUpdate(updatedData, "Dodano nową sekcję!");
     };
 
-    // Otwiera modal usuwania zamiast window.confirm
     const deleteSection = (id) => {
         setDeletingId(id);
     };
 
-    // Właściwe usunięcie i wysłanie do API
     const confirmDelete = async () => {
         setIsSaving(true);
         const updatedData = { ...data, sections: data.sections.filter(s => s.id !== deletingId) };
-        await sendUpdate(updatedData);
+        await sendUpdate(updatedData, "Sekcja usunięta!");
         setDeletingId(null);
     };
 
-    const sendUpdate = async (updatedData) => {
+    const sendUpdate = async (updatedData, successMessage) => {
         try {
             const res = await fetch(`${apiUrl}/api/about`, {
                 method: 'POST',
@@ -79,12 +81,18 @@ export default function AboutPage({ isAdmin }) {
             if (res.ok) {
                 setData(updatedData);
                 setEditingItem(null);
+                toast.success(successMessage || "Zapisano zmiany!");
+            } else {
+                toast.error("Wystąpił błąd podczas zapisu.");
             }
-        } catch (err) { alert("Błąd zapisu"); }
-        finally { setIsSaving(false); }
+        } catch (err) { 
+            toast.error("Błąd zapisu."); 
+        } finally { 
+            setIsSaving(false); 
+        }
     };
 
-    if (loading) return <div className="loading"></div>;
+    if (loading) return <AboutSkeleton />;
     if (!data) return <div className="error-screen">(Błąd połączenia z serwerem).</div>;
 
     return (

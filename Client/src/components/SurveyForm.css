@@ -151,8 +151,8 @@
 }
 
 .sunfire-submit-btn:hover:not(:disabled) {
-    transform: translateY(3px);
-    box-shadow: 0 0px 50px color-mix(in srgb, var(--sunfire-accent), transparent 80%);
+    transform: translateY(1px);
+    box-shadow: 0 0px 30px color-mix(in srgb, var(--sunfire-accent), transparent 80%);
     border: 2px solid var(--sunfire-accent);
     color: black;
     background: var(--sunfire-accent);
@@ -265,8 +265,8 @@
 }
 .success-btn.primary:hover {
     filter: brightness(1.2);
-    box-shadow: 0 0 20px color-mix(in srgb, var(--sunfire-accent), transparent 50%);
-    transform: translateY(-2px);
+    box-shadow: 0 0 10px color-mix(in srgb, var(--sunfire-accent), transparent 50%);
+    transform: translateY(-1px);
 }
 
 /* Przycisk drugorzędny (Wyślij kolejną) - obramowanie */

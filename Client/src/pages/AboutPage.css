@@ -89,9 +89,9 @@
 
 .about-card:hover {
     border-color: color-mix(in srgb, var(--sunfire-accent), transparent 60%);
-    transform: translateY(-5px);
+    transform: translateY(-1px);
     background: rgba(20, 20, 20, 0.8);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
 }
 
 .about-card.full-width {
@@ -140,7 +140,6 @@
 .card-actions button:hover {
     background: var(--sunfire-accent);
     border-color: var(--sunfire-accent);
-    transform: scale(1.1);
 }
 
 .card-actions .del-btn {

@@ -1,11 +1,12 @@
-import { useState } from 'react'; // 1. Dodajemy import useState
+import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import './Navbar.css';
 
-export default function Navbar({ isAdmin, setIsAdmin }) {
+export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
-  const apiUrl = import.meta.env.VITE_API_URL || "";
+  const { isAdmin, logout } = useAuth();
   
   // 2. Dodajemy stan dla mobilnego menu
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -15,12 +16,8 @@ export default function Navbar({ isAdmin, setIsAdmin }) {
 
   const handleLogout = async () => {
     try {
-      await fetch(`${apiUrl}/api/auth/logout`, { 
-        method: 'POST', 
-        credentials: 'include' 
-      });
-      setIsAdmin(false);
-      closeMenu(); // Zamykamy menu po wylogowaniu
+      await logout();
+      closeMenu();
       navigate('/');
     } catch (err) {
       console.error("Błąd wylogowania");
