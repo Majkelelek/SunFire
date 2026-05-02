@@ -142,6 +142,20 @@ app.Use(async (context, next) =>
     await next();
 });
 
+// *** DODANE: Przekierowanie przeglądarki z linków API na stronę główną
+app.Use(async (context, next) =>
+{
+    // Jeśli zapytanie idzie na API, jest to metoda GET i pochodzi z przeglądarki (chce HTML)
+    if (context.Request.Path.StartsWithSegments("/api") && 
+        context.Request.Method == HttpMethods.Get && 
+        context.Request.Headers["Accept"].ToString().Contains("text/html"))
+    {
+        context.Response.Redirect("/");
+        return;
+    }
+    await next();
+});
+
 app.UseCors("SunfirePolicy");
 
 app.UseDefaultFiles(); 
