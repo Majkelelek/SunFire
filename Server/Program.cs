@@ -53,10 +53,23 @@ builder.Services.AddApplicationServices();
 
 builder.Services.AddControllers();
 
-// 4. Rate Limiter
+// 4. Rate Limiter (Ochrona przed botami i DDoS)
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    
+    // Globalny limit dla wszystkich zapytań API
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            factory: partition => new FixedWindowRateLimiterOptions
+            {
+                AutoReplenishment = true,
+                PermitLimit = 100, // Max 100 zapytań
+                Window = TimeSpan.FromMinutes(1) // Na minutę
+            }));
+
+    // Specjalna ochrona formularza kontaktowego (bardziej restrykcyjna)
     options.AddPolicy("ContactSpamProtection", httpContext =>
         RateLimitPartition.GetFixedWindowLimiter(
             partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
@@ -120,23 +133,38 @@ var app = builder.Build();
 // KOLEJNOŚĆ MIDDLEWARE (Krytyczna)
 app.UseForwardedHeaders();
 
-// *** DODANE: Globalne nagłówki bezpieczeństwa (Naprawia większość ostrzeżeń z ZAP)
+// Globalne obsługa błędów (Ukrywanie szczegółów na produkcji)
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler(errorApp =>
+    {
+        errorApp.Run(async context =>
+        {
+            context.Response.StatusCode = 500;
+            context.Response.ContentType = "application/json";
+            await context.Response.WriteAsync("{\"error\": \"Wystąpił nieoczekiwany błąd serwera.\"}");
+        });
+    });
+}
+
+// *** DODANE: Globalne nagłówki bezpieczeństwa i walidacja
 app.Use(async (context, next) =>
 {
-    // Ochrona przed MIME-sniffingiem
+    // 1. Wymuszenie Content-Type: application/json dla zapisywania danych
+    var method = context.Request.Method;
+    if ((method == "POST" || method == "PUT" || method == "PATCH") && 
+        !context.Request.ContentType?.Contains("application/json") == true &&
+        !context.Request.Path.Value?.Contains("/api/projects") == true) // Wyjątek dla uploadu zdjęć jeśli byłby tu robiony
+    {
+        context.Response.StatusCode = 415; // Unsupported Media Type
+        return;
+    }
+
+    // 2. Nagłówki bezpieczeństwa
     context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
-    
-    // Ochrona przed Clickjackingiem (ramki)
     context.Response.Headers.Append("X-Frame-Options", "DENY");
-    
-    // Wymuszenie HTTPS (HSTS) - 1 rok
     context.Response.Headers.Append("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
-    
-    // Ochrona przed atakami XSS (starsze przeglądarki)
     context.Response.Headers.Append("X-XSS-Protection", "1; mode=block");
-    
-    // Content Security Policy (CSP)
-    // UWAGA: Skonfigurowana w sposób przyjazny dla Reacta. Pozwala na ładowanie obrazków i stylów z zewnętrznych źródeł (np. Google Fonts).
     context.Response.Headers.Append("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https:;");
 
     await next();
