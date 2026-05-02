@@ -173,10 +173,16 @@ app.Use(async (context, next) =>
 // *** DODANE: Przekierowanie przeglądarki z linków API na stronę główną
 app.Use(async (context, next) =>
 {
-    // Jeśli zapytanie idzie na API, jest to metoda GET i pochodzi z przeglądarki (chce HTML)
-    if (context.Request.Path.StartsWithSegments("/api") && 
-        context.Request.Method == HttpMethods.Get && 
-        context.Request.Headers["Accept"].ToString().Contains("text/html"))
+    var path = context.Request.Path.Value ?? "";
+    var isApi = path.StartsWith("/api", StringComparison.OrdinalIgnoreCase);
+    var isGet = context.Request.Method == HttpMethods.Get;
+    
+    // Sprawdzamy czy to bezpośrednia nawigacja z paska adresu (sec-fetch-mode: navigate)
+    // lub czy przeglądarka jawnie prosi o HTML
+    var isNav = context.Request.Headers["sec-fetch-mode"] == "navigate";
+    var wantsHtml = context.Request.Headers["Accept"].ToString().Contains("text/html");
+
+    if (isApi && isGet && (isNav || wantsHtml))
     {
         context.Response.Redirect("/");
         return;
