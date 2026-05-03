@@ -147,7 +147,7 @@ if (!app.Environment.IsDevelopment())
     });
 }
 
-// *** DODANE: Globalne nagłówki bezpieczeństwa i walidacja
+// *** Walidacja Content-Type i Cache-Control dla API
 app.Use(async (context, next) =>
 {
     // 1. Wymuszenie Content-Type: application/json dla zapisywania danych
@@ -160,28 +160,7 @@ app.Use(async (context, next) =>
         return;
     }
 
-    // 2. Nagłówki bezpieczeństwa
-    context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
-    context.Response.Headers.Append("X-Frame-Options", "DENY");
-    context.Response.Headers.Append("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
-    context.Response.Headers.Append("X-XSS-Protection", "1; mode=block");
-    context.Response.Headers.Append("Referrer-Policy", "strict-origin-when-cross-origin");
-    context.Response.Headers.Append("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=()");
-
-    // 3. Content Security Policy (bez wildcard, z fallbackami)
-    context.Response.Headers.Append("Content-Security-Policy",
-        "default-src 'none'; " +
-        "script-src 'self'; " +
-        "style-src 'self' https://fonts.googleapis.com; " +
-        "font-src 'self' https://fonts.gstatic.com; " +
-        "img-src 'self' data:; " +
-        $"connect-src 'self' {frontendUrl}; " +
-        "frame-ancestors 'none'; " +
-        "form-action 'self'; " +
-        "base-uri 'self'; " +
-        "object-src 'none'");
-
-    // 4. Cache-Control dla odpowiedzi API (zapobiega cache'owaniu wrażliwych danych)
+    // 2. Cache-Control dla odpowiedzi API (zapobiega cache'owaniu wrażliwych danych)
     if (context.Request.Path.StartsWithSegments("/api"))
     {
         context.Response.Headers.Append("Cache-Control", "no-store, no-cache, must-revalidate");
