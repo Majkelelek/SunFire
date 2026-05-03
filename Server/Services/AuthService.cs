@@ -101,8 +101,8 @@ namespace Server.Services
                 FailedAttempts = 0,
                 LockoutEnd = null
             };
-
             await _repository.InsertAsync(newUser);
+            
             return (true, "Konto nowego administratora zostało pomyślnie utworzone.");
         }
 

@@ -34,12 +34,10 @@ namespace Server.Controllers
                 return BadRequest(result.Message);
             }
 
-            var isProd = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Development";
-
             Response.Cookies.Append(CookieName, result.Token!, new CookieOptions {
                 HttpOnly = true,
                 Secure = true, 
-                SameSite = SameSiteMode.None, 
+                SameSite = SameSiteMode.Lax, 
                 Path = "/",
                 Expires = DateTime.UtcNow.AddHours(4)
             });
@@ -61,7 +59,7 @@ namespace Server.Controllers
             {
                 HttpOnly = true,
                 Secure = true, 
-                SameSite = SameSiteMode.None,
+                SameSite = SameSiteMode.Lax,
                 Path = "/"
             });
 
@@ -90,7 +88,13 @@ namespace Server.Controllers
             
             if (!result.IsValid)
             {
-                Response.Cookies.Delete(CookieName);
+                Response.Cookies.Delete(CookieName, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.Lax,
+                    Path = "/"
+                });
                 return Ok(new { isAuthenticated = false });
             }
 
