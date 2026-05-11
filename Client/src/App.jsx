@@ -2,12 +2,12 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import { useEffect, useState, useCallback } from 'react';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
-import ScrollToTop from './components/ScrollToTop'; // IMPORT SCROLL FIX
+import ScrollToTop from './components/ScrollToTop';
 import AnimatedRoutes from './components/AnimatedRoutes';
 import { useAuth } from './context/AuthContext';
 import { cmsService } from './services/cmsService';
 
-// Style
+
 import './App.css'; 
 import './Loading.css'; 
 
@@ -37,8 +37,7 @@ function App() {
           }
         }
       }
-    } catch (error) {
-      console.error("Nie udało się pobrać konfiguracji wyglądu:", error);
+    } catch {
     } finally {
       setIsConfigLoading(false);
     }
@@ -67,7 +66,7 @@ function App() {
 
   return (
     <Router>
-      <ScrollToTop /> {/* SCROLL FIX UMIESZCZONY W ROUTERZE */}
+      <ScrollToTop />
       <Navbar />
       
       <main className="content-wrapper">
@@ -76,7 +75,7 @@ function App() {
 
       <Footer />
 
-      {/* Global Toaster Configuration */}
+
       <Toaster 
         position="bottom-right"
         toastOptions={{

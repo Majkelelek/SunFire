@@ -12,9 +12,8 @@ export default function Home() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Stany edycji i modali
-  const [editingItem, setEditingItem] = useState(null); // 'hero' lub {type: 'focus', index}
-  const [itemToDelete, setItemToDelete] = useState(null); // index elementu
+  const [editingItem, setEditingItem] = useState(null);
+  const [itemToDelete, setItemToDelete] = useState(null);
   const [tempData, setTempData] = useState({});
   const [isSaving, setIsSaving] = useState(false);
 
@@ -22,8 +21,7 @@ export default function Home() {
     try {
       const result = await homeService.getHomeData();
       setData(result);
-    } catch (err) {
-      console.error("Błąd ładowania strony głównej:", err);
+    } catch {
     } finally {
       setLoading(false);
     }
@@ -33,10 +31,7 @@ export default function Home() {
     fetchData();
   }, []);
 
-  // --- FUNKCJE POMOCNICZE ---
-
   const openEdit = (type, index = null) => {
-    // Głęboka kopia zapobiega "podglądowi" zmian przed zapisem
     const deepCopy = JSON.parse(JSON.stringify(data));
     setTempData(deepCopy);
     setEditingItem(index !== null ? { type, index } : type);
@@ -60,7 +55,7 @@ export default function Home() {
   const addNewFocusItem = () => {
     const newItem = { title: "NOWA USŁUGA", description: "Opis...", size: "1-3" };
     const updatedData = { ...data, focusItems: [...(data.focusItems || []), newItem] };
-    handleSave(updatedData); // Automatyczny zapis po dodaniu[cite: 4]
+    handleSave(updatedData);
   };
 
   const confirmDelete = () => {
@@ -77,7 +72,7 @@ export default function Home() {
       <div className="home-bg-noise"></div>
       <div className="home-glow-main"></div>
 
-      {/* --- SEKCJA HERO --- */}
+
       <section className="hero">
         <div className="hero-content">
           <div className="editable-wrapper">
@@ -95,7 +90,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* --- SEKCJA FOCUS (SIATKA) --- */}
+
       <section className="design-focus">
         {data.focusItems && data.focusItems.map((item, index) => (
           <div key={index} className={`focus-item size-${item.size || '1-3'}`}>
@@ -131,7 +126,7 @@ export default function Home() {
         confirmText="USUŃ"
       />
 
-      {/* --- MODAL EDYCJI --- */}
+
       {editingItem && (
         <div className="modal-overlay" onClick={() => setEditingItem(null)}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>

@@ -11,7 +11,7 @@ const PortfolioPage = () => {
     const [loading, setLoading] = useState(true);
     const apiUrl = import.meta.env.VITE_API_URL || "";
     
-    // Stany dla modali
+
     const [expandedProject, setExpandedProject] = useState(null);
     const [editingSlot, setEditingSlot] = useState(null);
     const [projectToDelete, setProjectToDelete] = useState(null); 
@@ -52,7 +52,7 @@ const PortfolioPage = () => {
 
     const slotsCount = getSlotsCount();
 
-    // --- LOGIKA DODAWANIA ---
+
     const handleAddText = async () => {
         if (!textInput.trim()) return;
         setUploading(true);
@@ -101,7 +101,7 @@ const PortfolioPage = () => {
         }
     };
 
-    // --- NOWA LOGIKA USUWANIA ---
+
     const confirmDelete = async () => {
         if (!projectToDelete) return;
         setUploading(true);
@@ -179,7 +179,7 @@ const PortfolioPage = () => {
                 })}
             </div>
 
-            {/* LIGHTBOX (Powiększony obraz) */}
+            
             {expandedProject && (
                 <div className="lightbox-overlay" onClick={() => setExpandedProject(null)}>
                     <button className="lightbox-close" onClick={() => setExpandedProject(null)}>×</button>
@@ -189,7 +189,7 @@ const PortfolioPage = () => {
                 </div>
             )}
 
-            {/* MODAL USUWANIA */}
+            
             {projectToDelete && (
                 <div className="modal-overlay" onClick={() => setProjectToDelete(null)}>
                     <div className="modal-content" onClick={e => e.stopPropagation()}>
@@ -207,7 +207,7 @@ const PortfolioPage = () => {
                 </div>
             )}
 
-            {/* MODAL DODAWANIA PROJEKTU */}
+            
             {editingSlot !== null && (
                 <div className="modal-overlay" onClick={resetModal}>
                     <div className="modal-content" onClick={e => e.stopPropagation()}>
@@ -239,3 +239,4 @@ const PortfolioPage = () => {
 };
 
 export default PortfolioPage;
+

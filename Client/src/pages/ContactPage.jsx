@@ -13,5 +13,5 @@ const ContactPage = () => {
   );
 };
 
-// Eksport na samym dole - teraz na 100% będzie widoczny jako 'default'
+
 export default ContactPage;

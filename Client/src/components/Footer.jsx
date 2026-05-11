@@ -7,7 +7,7 @@ const Footer = () => {
 
     return (
         <footer className="main-footer">
-            {/* Dodana linia poświaty */}
+            
             <div className="footer-bottom-glow"></div>
             
             <div className="footer-content">

@@ -7,7 +7,7 @@ namespace Server.Models
         public string Id { get; set; } = Guid.NewGuid().ToString();
         public string Title { get; set; } = "Nowa Sekcja";
         public string Content { get; set; } = "";
-        public string Size { get; set; } = "half"; // "half" lub "full"
+        public string Size { get; set; } = "half";
     }
 
     public class AboutData
@@ -15,7 +15,7 @@ namespace Server.Models
         [BsonId]
         public string Id { get; set; } = "about_me_main";
         
-        // Pola nagłówka
+
         public string ManifestoTag { get; set; } = "MANIFESTO";
         public string Title { get; set; } = "Kreatywność to moja";
         public string TitleAccent { get; set; } = "broń";
@@ -23,7 +23,7 @@ namespace Server.Models
         public string Lead { get; set; } = "";
         public string Philosophy { get; set; } = "";
         
-        // Lista dynamicznych kafelków
+
         public List<AboutSection> Sections { get; set; } = new List<AboutSection>();
     }
 }

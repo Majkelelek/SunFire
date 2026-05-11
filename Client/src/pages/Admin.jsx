@@ -12,7 +12,7 @@ export default function Admin() {
   const [bgFile, setBgFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   
-  // State dla modala confirm
+
   const [modal, setModal] = useState({ isOpen: false, title: '', msg: '', onConfirm: null });
 
   const apiUrl = import.meta.env.VITE_API_URL || "";
@@ -120,7 +120,7 @@ export default function Admin() {
     <div className="admin-wrapper">
       <h1 className="admin-header">Sunfire CMS</h1>
 
-      {/* MODAL SYSTEM (Tylko Potwierdzenia) */}
+      
       {modal.isOpen && (
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
@@ -187,3 +187,4 @@ export default function Admin() {
     </div>
   );
 }
+

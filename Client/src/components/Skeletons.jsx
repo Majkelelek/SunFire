@@ -1,12 +1,12 @@
 import React from 'react';
 import './Skeletons.css';
 
-// Podstawowy element szkieletu
+
 export const SkeletonBase = ({ className = '', style = {} }) => (
   <div className={`skeleton-wrapper ${className}`} style={style}></div>
 );
 
-// Szkielet dla strony głównej (Hero + Grid)
+
 export const HomeSkeleton = () => {
   return (
     <div className="home-container" style={{ paddingTop: '100px' }}>
@@ -29,7 +29,7 @@ export const HomeSkeleton = () => {
   );
 };
 
-// Szkielet dla portfolio (siatka kwadratów)
+
 export const PortfolioSkeleton = () => {
   return (
     <div className="portfolio-container">
@@ -37,7 +37,7 @@ export const PortfolioSkeleton = () => {
          <SkeletonBase className="skeleton-title" style={{ width: '40%', margin: '0 auto' }} />
       </header>
       <div className="slots-grid">
-        {/* Generujemy 8 pustych slotów dla portfolio */}
+        
         {[...Array(8)].map((_, i) => (
           <SkeletonBase key={i} className="skeleton-portfolio-slot" />
         ))}
@@ -46,7 +46,7 @@ export const PortfolioSkeleton = () => {
   );
 };
 
-// Szkielet dla strony o mnie
+
 export const AboutSkeleton = () => {
   return (
     <div className="about-container">
@@ -67,3 +67,4 @@ export const AboutSkeleton = () => {
     </div>
   );
 };
+

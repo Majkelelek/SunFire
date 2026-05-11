@@ -13,13 +13,13 @@ using Server.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// *** DODANE: Ukrywanie informacji o serwerze (Naprawia "Server Leaks Version Information")
+
 builder.WebHost.ConfigureKestrel(options =>
 {
     options.AddServerHeader = false;
 });
 
-// 1. Ładowanie ENV
+
 Env.TraversePath().Load();
 var jwtKey = Environment.GetEnvironmentVariable("SUNFIRE_JWT_KEY") 
     ?? throw new Exception("Brak SUNFIRE_JWT_KEY w konfiguracji");
@@ -29,7 +29,7 @@ var mongoUri = Environment.GetEnvironmentVariable("SUNFIRE_MONGO_URI")
 var frontendUrl = Environment.GetEnvironmentVariable("FRONTEND_URL") 
     ?? "http://localhost:5173"; 
 
-// 2. KONFIGURACJA MONGODB
+
 var mongoSettings = MongoClientSettings.FromConnectionString(mongoUri);
 mongoSettings.SslSettings = new SslSettings 
 { 
@@ -40,7 +40,7 @@ builder.Services.AddSingleton<IMongoClient>(new MongoClient(mongoSettings));
 builder.Services.AddSingleton<IMongoDatabase>(sp => 
     sp.GetRequiredService<IMongoClient>().GetDatabase("SunfireDB"));
 
-// 3. Konfiguracja dla Azure Proxy
+
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
@@ -48,28 +48,28 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.KnownProxies.Clear();
 });
 
-// Zarejestruj własne serwisy i repozytoria
+
 builder.Services.AddApplicationServices();
 
 builder.Services.AddControllers();
 
-// 4. Rate Limiter (Ochrona przed botami i DDoS)
+
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
     
-    // Globalny limit dla wszystkich zapytań API
+
     options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
         RateLimitPartition.GetFixedWindowLimiter(
             partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
             factory: partition => new FixedWindowRateLimiterOptions
             {
                 AutoReplenishment = true,
-                PermitLimit = 100, // Max 100 zapytań
-                Window = TimeSpan.FromMinutes(1) // Na minutę
+                PermitLimit = 100,
+                Window = TimeSpan.FromMinutes(1)
             }));
 
-    // Specjalna ochrona formularza kontaktowego (bardziej restrykcyjna)
+
     options.AddPolicy("ContactSpamProtection", httpContext =>
         RateLimitPartition.GetFixedWindowLimiter(
             partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
@@ -81,7 +81,7 @@ builder.Services.AddRateLimiter(options =>
             }));
 });
 
-// 5. Autentykacja JWT
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options => {
         options.TokenValidationParameters = new TokenValidationParameters {
@@ -116,7 +116,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// 6. CORS
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("SunfirePolicy", corsBuilder =>
@@ -130,10 +130,10 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// KOLEJNOŚĆ MIDDLEWARE (Krytyczna)
+
 app.UseForwardedHeaders();
 
-// Globalne obsługa błędów (Ukrywanie szczegółów na produkcji)
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler(errorApp =>
@@ -147,20 +147,20 @@ if (!app.Environment.IsDevelopment())
     });
 }
 
-// *** Walidacja Content-Type i Cache-Control dla API
+
 app.Use(async (context, next) =>
 {
-    // 1. Wymuszenie Content-Type: application/json dla zapisywania danych
+
     var method = context.Request.Method;
     if ((method == "POST" || method == "PUT" || method == "PATCH") && 
         !context.Request.ContentType?.Contains("application/json") == true &&
-        !context.Request.Path.Value?.Contains("/api/projects") == true) // Wyjątek dla uploadu zdjęć jeśli byłby tu robiony
+        !context.Request.Path.Value?.Contains("/api/projects") == true)
     {
-        context.Response.StatusCode = 415; // Unsupported Media Type
+        context.Response.StatusCode = 415;
         return;
     }
 
-    // 2. Cache-Control dla odpowiedzi API (zapobiega cache'owaniu wrażliwych danych)
+
     if (context.Request.Path.StartsWithSegments("/api"))
     {
         context.Response.Headers.Append("Cache-Control", "no-store, no-cache, must-revalidate");
@@ -170,15 +170,15 @@ app.Use(async (context, next) =>
     await next();
 });
 
-// *** DODANE: Przekierowanie przeglądarki z linków API na stronę główną
+
 app.Use(async (context, next) =>
 {
     var path = context.Request.Path.Value ?? "";
     var isApi = path.StartsWith("/api", StringComparison.OrdinalIgnoreCase);
     var isGet = context.Request.Method == HttpMethods.Get;
     
-    // Sprawdzamy czy to bezpośrednia nawigacja z paska adresu (sec-fetch-mode: navigate)
-    // lub czy przeglądarka jawnie prosi o HTML
+
+
     var isNav = context.Request.Headers["sec-fetch-mode"] == "navigate";
     var wantsHtml = context.Request.Headers["Accept"].ToString().Contains("text/html");
 

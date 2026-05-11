@@ -5,7 +5,7 @@ const LegalInfo = () => {
     return (
         <div className="container" style={{ paddingTop: '20px', paddingBottom: '80px' }}>
             
-            {/* Przycisk powrotu */}
+            
             <div style={{ maxWidth: '900px', margin: '0 auto 30px auto' }}>
                 <Link to="/" style={{ 
                     color: '#fff', 

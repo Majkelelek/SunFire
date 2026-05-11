@@ -20,7 +20,7 @@ namespace Server.Models
     [JsonPropertyName("backgroundImageUrl")]
     public string? BackgroundImageUrl { get; set; }
 
-    // DODAJ TO, ABY NAPRAWIĆ BŁĄD:
+
     [JsonPropertyName("portfolioImages")]
     public List<string> PortfolioImages { get; set; } = new();
 }

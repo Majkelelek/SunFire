@@ -10,7 +10,7 @@ export default function AboutPage() {
     const [loading, setLoading] = useState(true);
     const apiUrl = import.meta.env.VITE_API_URL || "";
     
-    // Modal State - Edycja
+
     const [editingItem, setEditingItem] = useState(null); 
     const [tempTitle, setTempTitle] = useState('');
     const [tempAccent, setTempAccent] = useState('');
@@ -18,7 +18,7 @@ export default function AboutPage() {
     const [tempSize, setTempSize] = useState('half');
     const [isSaving, setIsSaving] = useState(false);
 
-    // Modal State - Usuwanie
+
     const [deletingId, setDeletingId] = useState(null);
 
     const fetchData = async () => {
@@ -152,7 +152,7 @@ export default function AboutPage() {
                 )}
             </div>
 
-            {/* MODAL EDYCJI */}
+            
             {editingItem && (
                 <div className="modal-overlay" onClick={() => setEditingItem(null)}>
                     <div className="modal-content" onClick={e => e.stopPropagation()}>
@@ -196,7 +196,7 @@ export default function AboutPage() {
                 </div>
             )}
 
-            {/* MODAL POTWIERDZENIA USUNIĘCIA */}
+            
             {deletingId && (
                 <div className="modal-overlay" onClick={() => setDeletingId(null)}>
                     <div className="modal-content" onClick={e => e.stopPropagation()}>
@@ -216,3 +216,4 @@ export default function AboutPage() {
         </div>
     );
 }
+

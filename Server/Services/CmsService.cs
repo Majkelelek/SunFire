@@ -142,9 +142,8 @@ namespace Server.Services
                     await _cloudinary.DestroyAsync(new DeletionParams(publicId));
                 }
             }
-            catch(Exception ex)
+            catch
             {
-                Console.WriteLine($"Nie udało się usunąć obrazu z chmury: {ex.Message}");
             }
         }
     }

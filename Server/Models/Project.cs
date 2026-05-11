@@ -10,14 +10,14 @@ namespace Server.Models
         [BsonRepresentation(BsonType.ObjectId)]
         public string? Id { get; set; }
 
-        [JsonPropertyName("title")] // Wymusza małą literę w JSON
+        [JsonPropertyName("title")]
         public string? Title { get; set; }
 
         [JsonPropertyName("type")]
-        public string? Type { get; set; } // "image" lub "text"
+        public string? Type { get; set; }
 
         [JsonPropertyName("content")]
-        public string? Content { get; set; } // Tu będzie Twój tekst notatki
+        public string? Content { get; set; }
 
         [JsonPropertyName("imageUrl")]
         public string? ImageUrl { get; set; }

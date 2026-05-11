@@ -16,7 +16,7 @@ export const apiFetch = async (endpoint, options = {}) => {
 
   const response = await fetch(`${API_URL}${endpoint}`, defaultOptions);
 
-  // You can handle global response errors here if needed
+
   if (!response.ok) {
     let errorData;
     try {
@@ -27,7 +27,7 @@ export const apiFetch = async (endpoint, options = {}) => {
     throw { status: response.status, data: errorData };
   }
 
-  // Helper to handle empty responses
+
   const contentType = response.headers.get("content-type");
   if (contentType && contentType.includes("application/json")) {
     return response.json();

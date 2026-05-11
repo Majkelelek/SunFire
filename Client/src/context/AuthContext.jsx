@@ -13,8 +13,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const isAuthenticated = await authService.checkAuth();
       setIsAdmin(isAuthenticated);
-    } catch (error) {
-      console.error("Auth check error:", error);
+    } catch {
       setIsAdmin(false);
     } finally {
       setIsAuthLoading(false);

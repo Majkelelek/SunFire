@@ -8,10 +8,8 @@ export default function Navbar() {
   const location = useLocation();
   const { isAdmin, logout } = useAuth();
   
-  // 2. Dodajemy stan dla mobilnego menu
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // 3. Funkcja pomocnicza do zamykania menu po kliknięciu w link
   const closeMenu = () => setIsMobileMenuOpen(false);
 
   const handleLogout = async () => {
@@ -19,8 +17,7 @@ export default function Navbar() {
       await logout();
       closeMenu();
       navigate('/');
-    } catch (err) {
-      console.error("Błąd wylogowania");
+    } catch {
     }
   };
 
@@ -31,14 +28,14 @@ export default function Navbar() {
           SUN<span>FIRE</span>
         </Link>
 
-        {/* 4. Przycisk Hamburgera (widoczny tylko na telefonach) */}
+
         <div className={`hamburger ${isMobileMenuOpen ? 'active' : ''}`} onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
           <span className="bar"></span>
           <span className="bar"></span>
           <span className="bar"></span>
         </div>
 
-        {/* 5. Pakujemy linki i przyciski w nowy div .nav-menu */}
+
         <div className={`nav-menu ${isMobileMenuOpen ? 'active' : ''}`}>
           <div className="nav-links">
             <Link to="/" className={location.pathname === '/' ? 'active' : ''} onClick={closeMenu}>
